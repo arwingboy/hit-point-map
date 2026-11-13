@@ -1,0 +1,467 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+  <meta name="theme-color" content="#f6f7f2">
+  <title>Hit Point Map</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=Space+Grotesk:wght@500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://api.mapbox.com/mapbox-gl-js/v3.0.1/mapbox-gl.css">
+  <style>
+    :root {
+      --ink: #17231f;
+      --muted: #71807a;
+      --paper: #f6f7f2;
+      --card: rgba(255, 255, 255, .94);
+      --line: #e4e9e1;
+      --green: #2e7d5b;
+      --lime: #d7ec68;
+      --orange: #f79b57;
+      --pink: #e97283;
+      --blue: #6a9fe7;
+      --shadow: 0 18px 50px rgba(31, 47, 39, .16);
+    }
+
+    * { box-sizing: border-box; }
+    html, body { margin: 0; min-height: 100%; }
+    body {
+      color: var(--ink);
+      background: var(--paper);
+      font-family: 'DM Sans', sans-serif;
+      overflow: hidden;
+    }
+
+    #map { position: fixed; inset: 0; z-index: 0; background: #dce8df; }
+    .mapboxgl-ctrl-attrib { font-size: .6rem; opacity: .7; }
+    .mapboxgl-ctrl-logo { opacity: .75; }
+
+    .app-shell { position: relative; z-index: 2; min-height: 100vh; pointer-events: none; }
+    .top-controls, .bottom-sheet, .bottom-nav, .toast { pointer-events: auto; }
+
+    .top-controls {
+      position: absolute;
+      top: max(1rem, env(safe-area-inset-top));
+      left: 50%;
+      width: min(100% - 2rem, 34rem);
+      transform: translateX(-50%);
+    }
+
+    .search-wrap {
+      display: flex;
+      align-items: center;
+      gap: .75rem;
+      padding: .62rem .85rem .62rem 1rem;
+      background: var(--card);
+      border: 1px solid rgba(255,255,255,.82);
+      border-radius: 1.15rem;
+      box-shadow: var(--shadow);
+      backdrop-filter: blur(18px);
+    }
+
+    .search-icon { width: 1.2rem; height: 1.2rem; flex: none; color: var(--green); }
+    .search-input { min-width: 0; flex: 1; border: 0; outline: 0; background: transparent; color: var(--ink); font: inherit; font-size: .92rem; }
+    .search-input::placeholder { color: #8c9892; }
+    .clear-button, .icon-button { display: grid; place-items: center; border: 0; background: transparent; color: var(--muted); cursor: pointer; }
+    .clear-button { width: 1.8rem; height: 1.8rem; border-radius: 50%; font-size: 1rem; }
+    .clear-button:hover { background: #edf2eb; color: var(--ink); }
+
+    .filters { display: flex; gap: .5rem; padding: .7rem .25rem 0; overflow-x: auto; scrollbar-width: none; }
+    .filters::-webkit-scrollbar { display: none; }
+    .dataset-toggle {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: .75rem;
+      margin: .65rem .25rem 0;
+      padding: .5rem .7rem;
+      color: var(--muted);
+      background: rgba(255,255,255,.78);
+      border: 1px solid rgba(255,255,255,.8);
+      border-radius: .8rem;
+      box-shadow: 0 5px 16px rgba(31,47,39,.06);
+      font-size: .72rem;
+      font-weight: 600;
+    }
+    .dataset-toggle-control { display: inline-flex; align-items: center; gap: .45rem; cursor: pointer; }
+    .dataset-toggle-control input { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); }
+    .dataset-switch { position: relative; width: 2.2rem; height: 1.25rem; border-radius: 99rem; background: #cbd5ce; transition: background .2s ease; }
+    .dataset-switch::after { content: ''; position: absolute; top: .15rem; left: .15rem; width: .95rem; height: .95rem; border-radius: 50%; background: #fff; box-shadow: 0 1px 3px rgba(0,0,0,.2); transition: transform .2s ease; }
+    .dataset-toggle-control input:checked + .dataset-switch { background: var(--green); }
+    .dataset-toggle-control input:checked + .dataset-switch::after { transform: translateX(.95rem); }
+    .dataset-toggle-control input:focus-visible + .dataset-switch { outline: 2px solid var(--green); outline-offset: 2px; }
+    .filter-pill {
+      flex: 0 0 auto;
+      display: inline-flex;
+      align-items: center;
+      gap: .4rem;
+      border: 1px solid rgba(255,255,255,.8);
+      border-radius: 99rem;
+      padding: .58rem .85rem;
+      background: rgba(255,255,255,.78);
+      color: var(--muted);
+      cursor: pointer;
+      font: 600 .78rem 'DM Sans', sans-serif;
+      transition: .2s ease;
+    }
+    .filter-pill:hover { transform: translateY(-1px); }
+    .filter-pill.active { color: #153c2b; background: var(--lime); border-color: var(--lime); }
+    .pill-count { color: inherit; opacity: .7; }
+
+    .brand-mark {
+      position: absolute;
+      top: max(1rem, env(safe-area-inset-top));
+      left: 1rem;
+      display: none;
+      align-items: center;
+      gap: .55rem;
+      font: 700 .88rem 'Space Grotesk', sans-serif;
+    }
+    .brand-dot { width: .72rem; height: .72rem; border-radius: 50%; background: var(--pink); box-shadow: 0 0 0 .28rem rgba(233,114,131,.2); }
+
+    .bottom-sheet {
+      position: fixed;
+      z-index: 5;
+      left: 50%;
+      bottom: 4.65rem;
+      width: min(100% - 1.2rem, 34rem);
+      transform: translateX(-50%);
+    }
+
+    .sheet-handle { width: 2.8rem; height: .25rem; margin: 0 auto .65rem; border-radius: 99rem; background: rgba(23,35,31,.32); }
+    .event-card {
+      display: grid;
+      grid-template-columns: 7.1rem minmax(0, 1fr);
+      min-height: 11rem;
+      max-height: min(32rem, 50vh);
+      min-width: 0;
+      overflow: hidden;
+      background: var(--card);
+      border: 1px solid rgba(255,255,255,.8);
+      border-radius: 1.3rem;
+      box-shadow: var(--shadow);
+      backdrop-filter: blur(18px);
+      animation: card-in .28s ease both;
+    }
+    .cover { display: block; width: 100%; max-width: 100%; height: 100%; min-height: 11rem; object-fit: cover; background: #d8e6d9; }
+    .event-body { min-width: 0; min-height: 0; padding: clamp(.8rem, 2.5vw, 1rem); overflow-x: hidden; overflow-y: auto; overflow-wrap: break-word; word-break: break-word; }
+    .event-topline { display: flex; align-items: center; justify-content: space-between; gap: .5rem; min-width: 0; margin-bottom: .5rem; }
+    .badge { display: inline-flex; align-items: center; min-width: 0; max-width: 100%; gap: .28rem; overflow: hidden; color: var(--green); font-size: .67rem; font-weight: 700; letter-spacing: .08em; text-overflow: ellipsis; text-transform: uppercase; white-space: nowrap; }
+    .badge::before { content: ''; width: .42rem; height: .42rem; border-radius: 50%; background: var(--orange); }
+    .event-index { color: #a0aaa4; font-size: .7rem; font-weight: 600; }
+    .bookmark-button { display: grid; place-items: center; width: 1.9rem; height: 1.9rem; padding: 0; border: 1px solid var(--line); border-radius: 50%; color: var(--muted); background: rgba(255,255,255,.7); cursor: pointer; }
+    .bookmark-button:hover, .bookmark-button[aria-pressed="true"] { color: var(--green); border-color: #b7d4be; background: #eaf5e9; }
+    .bookmark-button svg { width: .95rem; height: .95rem; }
+    .event-title { margin: 0; overflow: hidden; font: 700 1.13rem/1.16 'Space Grotesk', sans-serif; text-overflow: ellipsis; white-space: nowrap; }
+    .event-subtitle { margin: .22rem 0 0; overflow: hidden; color: var(--green); font-size: .74rem; font-weight: 600; text-overflow: ellipsis; white-space: nowrap; }
+    .event-location { display: flex; align-items: center; gap: .25rem; margin: .5rem 0 0; color: var(--muted); font-size: .72rem; font-weight: 600; }
+    .event-summary { display: -webkit-box; min-width: 0; max-width: 100%; margin: .5rem 0 .7rem; overflow: hidden; color: var(--muted); font-size: .76rem; line-height: 1.4; overflow-wrap: break-word; word-break: break-word; -webkit-box-orient: vertical; -webkit-line-clamp: 2; line-clamp: 2; }
+    .metadata { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: .38rem; margin-top: .55rem; color: var(--muted); font-size: .68rem; }
+    .metadata > span { display: flex; align-items: flex-start; min-width: 0; max-width: 100%; gap: .28rem; padding: .38rem .45rem; border-radius: .5rem; background: #f3f6f1; }
+    .metadata span > span { display: block; min-width: 0; flex: 1 1 auto; padding: 0; overflow-wrap: break-word; background: transparent; word-break: break-word; white-space: normal; }
+    .metadata strong { flex: 0 0 auto; min-width: max-content; color: var(--ink); font-weight: 700; }
+    .card-actions { display: flex; align-items: flex-end; justify-content: space-between; flex-wrap: wrap; min-width: 0; gap: .6rem; margin-top: .8rem; }
+    .stats-row { display: flex; flex: 1 1 12rem; align-items: center; flex-wrap: wrap; min-width: 0; gap: .4rem; color: var(--muted); font-size: .68rem; }
+    .stats-row > span { display: inline-flex; align-items: baseline; gap: .2rem; min-width: 0; padding: .25rem .35rem; border-radius: .4rem; background: #f3f6f1; }
+    .stats-row strong { color: var(--ink); font-weight: 700; white-space: nowrap; }
+    .action-links { display: flex; flex: 0 1 auto; flex-wrap: wrap; justify-content: flex-end; gap: .4rem; }
+    .instagram-button, .navigate-button { display: inline-flex; align-items: center; justify-content: center; gap: .35rem; min-height: 2rem; padding: .5rem .65rem; border-radius: .65rem; font: 700 .7rem 'DM Sans', sans-serif; text-decoration: none; white-space: nowrap; cursor: pointer; }
+    .instagram-button { color: #b72b5c; border: 1px solid #edbfd0; background: #fff5f8; }
+    .instagram-button:hover { color: #fff; border-color: #c13584; background: linear-gradient(135deg, #f58529, #c13584 55%, #833ab4); }
+    .spike { color: #d66b4b; font-size: .7rem; font-weight: 700; }
+    .navigate-button { border: 0; color: #fff; background: var(--green); }
+    .navigate-button:hover { background: #225e44; }
+    .empty-state { padding: 1.4rem; text-align: center; color: var(--muted); background: var(--card); border-radius: 1.2rem; box-shadow: var(--shadow); }
+
+    .bottom-nav {
+      position: fixed;
+      z-index: 6;
+      right: 0;
+      bottom: 0;
+      left: 0;
+      display: grid;
+      grid-template-columns: repeat(5, 1fr);
+      min-height: 4.5rem;
+      padding: .45rem .7rem max(.45rem, env(safe-area-inset-bottom));
+      background: rgba(255,255,255,.91);
+      border-top: 1px solid rgba(221,230,220,.9);
+      box-shadow: 0 -12px 30px rgba(31,47,39,.08);
+      backdrop-filter: blur(20px);
+    }
+    .nav-item { display: flex; flex-direction: column; align-items: center; justify-content: center; gap: .22rem; border: 0; background: transparent; color: #89958e; cursor: pointer; font: 600 .64rem 'DM Sans', sans-serif; }
+    .nav-item svg { width: 1.2rem; height: 1.2rem; }
+    .nav-item.active { color: var(--green); }
+    .create-button { position: relative; top: -.95rem; width: 3rem; height: 3rem; margin-bottom: -.8rem; border: .3rem solid var(--paper); border-radius: 50%; color: #173c2c; background: var(--lime); box-shadow: 0 .5rem 1rem rgba(59,89,44,.2); }
+    .create-button svg { width: 1.3rem; height: 1.3rem; }
+
+    .toast { position: fixed; z-index: 10; top: 5.8rem; left: 50%; padding: .65rem .85rem; border-radius: .7rem; color: #fff; background: rgba(23,35,31,.9); font-size: .75rem; transform: translate(-50%, -1rem); opacity: 0; pointer-events: none; transition: .2s ease; }
+    .toast.show { transform: translate(-50%, 0); opacity: 1; }
+    @keyframes card-in { from { opacity: 0; transform: translateY(.6rem); } to { opacity: 1; transform: translateY(0); } }
+    @media (min-width: 800px) {
+      .brand-mark { display: flex; }
+      .top-controls { top: 1.5rem; }
+      .bottom-sheet { right: 2rem; bottom: 2rem; left: auto; width: min(38rem, 90vw); transform: none; }
+      .event-card { width: min(38rem, 90vw); max-height: min(32rem, calc(100vh - 4rem)); }
+      .bottom-nav { top: 50%; right: auto; bottom: auto; left: 1.5rem; width: 4.6rem; min-height: 26rem; grid-template-columns: 1fr; grid-template-rows: repeat(5, 1fr); transform: translateY(-50%); border: 1px solid rgba(221,230,220,.9); border-radius: 1.4rem; box-shadow: var(--shadow); }
+      .create-button { top: 0; margin-bottom: 0; }
+    }
+    @media (prefers-reduced-motion: reduce) { *, *::before, *::after { animation-duration: .01ms !important; transition-duration: .01ms !important; } }
+  </style>
+</head>
+<body>
+  <div id="map" aria-label="Interactive map of Hong Kong"></div>
+  <div class="app-shell">
+    <div class="brand-mark"><span class="brand-dot"></span> HIT POINT MAP</div>
+    <header class="top-controls">
+      <div class="search-wrap">
+        <svg class="search-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="7"></circle><path d="m20 20-4-4"></path></svg>
+        <input id="searchInput" class="search-input" type="search" placeholder="Search a place, mood, or friend..." autocomplete="off">
+        <button id="clearSearch" class="clear-button" type="button" aria-label="Clear search">×</button>
+      </div>
+      <div id="filters" class="filters" aria-label="Event categories"></div>
+      <div class="dataset-toggle">
+        <span id="datasetLabel">Showing events with explicit dates</span>
+        <label class="dataset-toggle-control">
+          <span>Include Points Without Explicit Date</span>
+          <input id="datasetToggle" type="checkbox" role="switch" aria-label="Include events without dates">
+          <span class="dataset-switch" aria-hidden="true"></span>
+        </label>
+      </div>
+    </header>
+
+    <section class="bottom-sheet" aria-live="polite">
+      <div class="sheet-handle" aria-hidden="true"></div>
+      <div id="eventCard"></div>
+    </section>
+
+    <nav class="bottom-nav" aria-label="Main navigation">
+      <button class="nav-item active" type="button" data-nav="Discover"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M3 11.5 12 4l9 7.5"></path><path d="M5.5 10v9h13v-9M9 19v-5h6v5"></path></svg><span>Discover</span></button>
+      <button class="nav-item" type="button" data-nav="Activity"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M4 13h3l2-7 4 12 2-5h5"></path></svg><span>Activity</span></button>
+      <button class="nav-item create-button" type="button" data-nav="Create" aria-label="Create"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 5v14M5 12h14"></path></svg></button>
+      <button class="nav-item" type="button" data-nav="Settings"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M12 15.2a3.2 3.2 0 1 0 0-6.4 3.2 3.2 0 0 0 0 6.4Z"></path><path d="m19.4 15 .1.1a2 2 0 0 1-2.8 2.8l-.1-.1a2 2 0 0 0-3.4 1.4v.2a2 2 0 0 1-4 0v-.2a2 2 0 0 0-3.4-1.4l-.1.1A2 2 0 0 1 3 15.1l.1-.1a2 2 0 0 0-1.4-3.4h-.2a2 2 0 0 1 0-4h.2a2 2 0 0 0 1.4-3.4L3 4.1A2 2 0 0 1 5.8 1.3l.1.1a2 2 0 0 0 3.4-1.4V0h4v.1a2 2 0 0 0 3.4 1.4l.1-.1a2 2 0 0 1 2.8 2.8l-.1.1a2 2 0 0 0 1.4 3.4h.2a2 2 0 0 1 0 4h-.2a2 2 0 0 0-1.4 3.3Z" transform="scale(.7) translate(5 5)"></path></svg><span>Settings</span></button>
+      <button class="nav-item" type="button" data-nav="You"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="12" cy="8" r="3.5"></circle><path d="M5 20c.7-3.3 3-5 7-5s6.3 1.7 7 5"></path></svg><span>You</span></button>
+    </nav>
+  </div>
+  <div id="toast" class="toast" role="status"></div>
+
+  <script src="https://api.mapbox.com/mapbox-gl-js/v3.0.1/mapbox-gl.js"></script>
+  <script>
+    const fallbackData = [
+      { hashtag: 'hkconcert', category: 'show', cover_url: 'https://images.unsplash.com/photo-1501386761578-eac5c94b800a?auto=format&fit=crop&w=700&q=80', likes: 24000, comments: 61, posted_at: 1792123240000, gmap_url: 'https://www.google.com/maps/search/?api=1&query=Hong+Kong+Academy+for+Performing+Arts', 'llm.place_name': '香港演藝學院歌劇院', 'llm.district': '灣仔', 'llm.category': 'show', 'llm.summary': '陳奕迅錄音室現場演唱會，抽籤購票', 'llm.event_name': 'McDonald’s Presents: Recording Sessions with Mr. Eason Chan', 'llm.opening_hours': '晚上八時正', spike_velocity: 952.31, lat: 22.276, lng: 114.171 },
+      { hashtag: 'mongkokfood', category: 'eat', cover_url: 'https://images.unsplash.com/photo-1552566626-52f8b828add9?auto=format&fit=crop&w=700&q=80', likes: 12800, comments: 214, posted_at: 1792011240000, gmap_url: 'https://www.google.com/maps/search/?api=1&query=Mong+Kok+Hong+Kong', 'llm.place_name': '深夜大排檔', 'llm.district': '旺角', 'llm.category': 'eat', 'llm.summary': '鑊氣十足的街坊小店，晚市限定菜單', 'llm.event_name': 'Late Night Street Kitchen', 'llm.opening_hours': '18:00 - 02:00', spike_velocity: 718.42, lat: 22.319, lng: 114.169 },
+      { hashtag: 'harbourplay', category: 'play', cover_url: 'https://images.unsplash.com/photo-1511886929837-354d827aae26?auto=format&fit=crop&w=700&q=80', likes: 9300, comments: 88, posted_at: 1791942240000, gmap_url: 'https://www.google.com/maps/search/?api=1&query=Central+Hong+Kong', 'llm.place_name': '中環天台遊樂場', 'llm.district': '中環', 'llm.category': 'play', 'llm.summary': '看著維港玩一局日落籃球，免費入場', 'llm.event_name': 'Sunset Rooftop Court', 'llm.opening_hours': '每日 07:00 - 23:00', spike_velocity: 534.76, lat: 22.282, lng: 114.158 },
+      { hashtag: 'artweekend', category: 'show', cover_url: 'https://images.unsplash.com/photo-1561214115-f2f134cc4912?auto=format&fit=crop&w=700&q=80', likes: 6700, comments: 43, posted_at: 1791842240000, gmap_url: 'https://www.google.com/maps/search/?api=1&query=Tai+Kwun+Hong+Kong', 'llm.place_name': '大館當代展覽', 'llm.district': '中環', 'llm.category': 'show', 'llm.summary': '新媒體藝術與城市聲音的沉浸式展覽', 'llm.event_name': 'City Frequencies', 'llm.opening_hours': '11:00 - 19:00', spike_velocity: 402.18, lat: 22.281, lng: 114.154 }
+    ];
+
+    const categoryMeta = { all: { label: 'All', icon: '✦' }, eat: { label: 'Eat', icon: '●' }, show: { label: 'Show', icon: '♫' }, play: { label: 'Play', icon: '✚' } };
+    const state = { data: [], filtered: [], category: 'all', search: '', selected: 0, markers: new Map(), bookmarks: new Set(), showWithoutDate: false, loadRequest: 0 };
+    mapboxgl.accessToken = 'pk.eyJ1IjoiYXJ3aW5nYm95IiwiYSI6ImNtdnI4NDZmcTA1MWMyenB6Y291Y3RiN2QifQ.n1nobP2xHysAYss5qu9wMA';
+    const map = new mapboxgl.Map({
+      container: 'map',
+      style: 'mapbox://styles/mapbox/streets-v12',
+      center: [114.1694, 22.3193],
+      zoom: 12.5,
+      minZoom: 11,
+      maxZoom: 19,
+      attributionControl: true
+    });
+
+    const el = (id) => document.getElementById(id);
+    const escapeHtml = (value) => String(value ?? '').replace(/[&<>'"]/g, (char) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', "'": '&#39;', '"': '&quot;' }[char]));
+    const categoryOf = (item) => String(item.category || item['llm.category'] || 'show').toLowerCase();
+    const titleOf = (item) => item['llm.place_name'] || item['llm.event_name'] || 'Untitled hit point';
+    const summaryOf = (item) => item['llm.summary'] || 'A new point worth discovering.';
+    const formatNumber = (value) => new Intl.NumberFormat('en', { notation: 'compact', maximumFractionDigits: 1 }).format(Number(value) || 0);
+    const formatDate = (value) => {
+      if (!value) return '';
+      const date = new Date(value);
+      return Number.isNaN(date.getTime()) ? String(value) : date.toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' });
+    };
+    const formatDateRange = (item) => {
+      const start = formatDate(item['llm.start_date']);
+      const end = formatDate(item['llm.end_date']);
+      if (!start && !end) return '';
+      return start && end ? `${start} - ${end}` : start || end;
+    };
+    const timestampOf = (value) => {
+      if (value === undefined || value === null || String(value).trim() === '') return null;
+      if (typeof value === 'number' || (typeof value === 'string' && /^-?\d+(?:\.\d+)?$/.test(value.trim()))) {
+        const number = Number(value);
+        if (!Number.isFinite(number)) return null;
+        return Math.abs(number) < 1e12 ? number * 1000 : number;
+      }
+      const timestamp = Date.parse(value);
+      return Number.isNaN(timestamp) ? null : timestamp;
+    };
+    const bookmarkKey = (item) => item.url || `${titleOf(item)}-${item.posted_at || ''}`;
+    const statusOf = (item) => item['llm.sentiment'] ? String(item['llm.sentiment']) : item['llm.opening_hours'] ? 'live' : 'hot now';
+    const showToast = (message) => { const toast = el('toast'); toast.textContent = message; toast.classList.add('show'); window.clearTimeout(showToast.timer); showToast.timer = window.setTimeout(() => toast.classList.remove('show'), 1800); };
+
+    function coordinateValue(item, keys) {
+      for (const key of keys) {
+        const value = typeof key === 'function' ? key(item) : item[key];
+        if (value !== undefined && value !== null && String(value).trim() !== '') {
+          const number = Number(value);
+          if (Number.isFinite(number)) return number;
+        }
+      }
+      return null;
+    }
+
+    function googleMapsUrl(item) {
+      const place = item['llm.place_name'] || item['llm.event_name'] || item.place_name || item.event_name || '';
+      const district = item['llm.district'] || item.district || '';
+      const query = [place, district, 'Hong Kong'].filter(Boolean).join(' ');
+      return `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(query)}`;
+    }
+
+    function normalize(item, index, coordinateUsage) {
+      const fallbackCoords = [[22.276, 114.171], [22.319, 114.169], [22.282, 114.158], [22.281, 114.154], [22.297, 114.172]];
+      const latitude = coordinateValue(item, ['lat', 'latitude', 'place_lat', 'place_latitude', 'llm.lat', 'llm.latitude', 'coordinates.lat', 'location.lat', (value) => value.coordinates?.latitude, (value) => value.location?.latitude]);
+      const longitude = coordinateValue(item, ['lng', 'lon', 'longitude', 'place_lng', 'place_longitude', 'llm.lng', 'llm.longitude', 'coordinates.lng', 'coordinates.lon', 'location.lng', (value) => value.coordinates?.longitude, (value) => value.location?.longitude]);
+      const hasCoordinates = latitude !== null && longitude !== null;
+      const baseCoords = hasCoordinates ? [latitude, longitude] : fallbackCoords[index % fallbackCoords.length];
+      const coordinateKey = `${baseCoords[0].toFixed(7)},${baseCoords[1].toFixed(7)}`;
+      const duplicateIndex = coordinateUsage.get(coordinateKey) || 0;
+      coordinateUsage.set(coordinateKey, duplicateIndex + 1);
+      const angle = duplicateIndex * Math.PI / 4;
+      const ring = Math.floor(duplicateIndex / 8) + 1;
+      const offset = duplicateIndex ? 0.00012 * ring : 0;
+      const coords = [baseCoords[0] + Math.sin(angle) * offset, baseCoords[1] + Math.cos(angle) * offset];
+      const coverPath = String(item.cover_path || '').replace(/\\/g, '/');
+      const coverFileName = coverPath.split('/').pop();
+      const localCoverUrl = coverFileName ? `covers/${encodeURIComponent(coverFileName)}` : '';
+      return { ...item, category: categoryOf(item), lat: coords[0], lng: coords[1], cover_url: localCoverUrl || item.cover_url || '', gmap_url: googleMapsUrl(item) };
+    }
+
+    function renderFilters() {
+      const counts = state.data.reduce((acc, item) => { acc[categoryOf(item)] = (acc[categoryOf(item)] || 0) + 1; return acc; }, {});
+      el('filters').innerHTML = Object.entries(categoryMeta).map(([key, meta]) => `<button class="filter-pill ${state.category === key ? 'active' : ''}" data-category="${key}" type="button"><span>${meta.icon}</span>${meta.label}<span class="pill-count">${key === 'all' ? state.data.length : counts[key] || 0}</span></button>`).join('');
+      el('filters').querySelectorAll('[data-category]').forEach((button) => button.addEventListener('click', () => { state.category = button.dataset.category; state.selected = 0; applyFilters(); }));
+    }
+
+    function markerIcon(item, active = false) {
+      const colors = { eat: 'var(--orange)', show: 'var(--pink)', play: 'var(--blue)' };
+      const icons = { eat: '●', show: '♫', play: '✚' };
+      const element = document.createElement('button');
+      element.type = 'button';
+      element.className = 'custom-marker';
+      element.title = titleOf(item);
+      element.setAttribute('aria-label', titleOf(item));
+      element.style.cssText = `width:${active ? 42 : 34}px;height:${active ? 42 : 34}px;border:${active ? '4px solid #fff' : '3px solid rgba(255,255,255,.9)'};border-radius:50%;display:grid;place-items:center;padding:0;color:#fff;background:${colors[item.category] || 'var(--green)'};box-shadow:0 6px 16px rgba(31,47,39,.25);font:700 ${active ? 19 : 15}px Arial;cursor:pointer;`;
+      element.textContent = icons[item.category] || '✦';
+      return element;
+    }
+
+    function renderMarkers() {
+      state.markers.forEach((marker) => marker.remove());
+      state.markers.clear();
+      state.filtered.forEach((item, index) => {
+        const marker = new mapboxgl.Marker({ element: markerIcon(item, index === state.selected), anchor: 'center' })
+          .setLngLat([item.lng, item.lat])
+          .setPopup(new mapboxgl.Popup({ offset: 24, closeButton: false }).setText(titleOf(item)))
+          .addTo(map);
+        marker.getElement().addEventListener('click', () => selectItem(index, true));
+        state.markers.set(item, marker);
+      });
+    }
+
+    function renderCard() {
+      const item = state.filtered[state.selected];
+      if (!item) { el('eventCard').innerHTML = '<div class="empty-state">No hit points match that search.</div>'; return; }
+      const eventName = item['llm.event_name'] || '';
+      const placeName = item['llm.place_name'] || '';
+      const title = eventName || placeName;
+      const category = categoryOf(item);
+      const dateRange = formatDateRange(item);
+      const hours = item['llm.opening_hours'] || formatDate(item.posted_at);
+      const unknown = '未知';
+      const district = item['llm.district'] || unknown;
+      const date = dateRange || unknown;
+      const openingHours = hours || unknown;
+      const price = item['llm.price'] || unknown;
+      const details = [
+        `<span>📍 <strong>地點</strong><span title="${escapeHtml(district)}">${escapeHtml(district)}</span></span>`,
+        `<span>📅 <strong>日期</strong><span title="${escapeHtml(date)}">${escapeHtml(date)}</span></span>`,
+        `<span>⏰ <strong>時間</strong><span title="${escapeHtml(openingHours)}">${escapeHtml(openingHours)}</span></span>`,
+        `<span>🎟️ <strong>價錢</strong><span title="${escapeHtml(price)}">${escapeHtml(price)}</span></span>`
+      ].join('');
+      const isBookmarked = state.bookmarks.has(bookmarkKey(item));
+      const fallbackImage = 'https://images.unsplash.com/photo-1517457373958-b7bdd4587205?auto=format&fit=crop&w=700&q=80';
+      const imageUrl = item.cover_url || fallbackImage;
+      el('eventCard').innerHTML = `<article class="event-card"><img class="cover" src="${escapeHtml(imageUrl)}" width="700" height="700" loading="lazy" decoding="async" alt="${escapeHtml(title)}" onerror="if (!this.dataset.fallback) { this.dataset.fallback='true'; this.src='${fallbackImage}'; }"><div class="event-body"><div class="event-topline"><span class="badge">${escapeHtml(category)} · ${escapeHtml(statusOf(item))}</span><div style="display:flex;align-items:center;gap:.45rem"><span class="event-index">${state.selected + 1} / ${state.filtered.length}</span><button class="bookmark-button" type="button" aria-label="${isBookmarked ? 'Remove bookmark' : 'Bookmark event'}" aria-pressed="${isBookmarked}"><svg viewBox="0 0 24 24" fill="${isBookmarked ? 'currentColor' : 'none'}" stroke="currentColor" stroke-width="1.8"><path d="M6 4.8A2.8 2.8 0 0 1 8.8 2h6.4A2.8 2.8 0 0 1 18 4.8V21l-6-3.5L6 21V4.8Z"></path></svg></button></div></div><h2 class="event-title" title="${escapeHtml(title)}">${escapeHtml(title)}</h2>${eventName && placeName ? `<p class="event-subtitle" title="${escapeHtml(placeName)}">${escapeHtml(placeName)}</p>` : ''}<p class="event-summary">${escapeHtml(summaryOf(item))}</p><div class="metadata">${details}</div><div class="card-actions"><div class="stats-row"><span>♡ <strong>${formatNumber(item.likes)}</strong></span>${item.spike_score !== undefined && item.spike_score !== null ? `<span>↗ <strong>Spike Score: ${escapeHtml(Number(item.spike_score).toFixed(1))}</strong></span>` : ''}</div><div class="action-links"><a class="instagram-button" href="${escapeHtml(item.url || '#')}" target="_blank" rel="noopener">IG Post ↗</a><a class="navigate-button" href="${escapeHtml(item.gmap_url || '#')}" target="_blank" rel="noopener">Navigate ↗</a></div></div></div></article>`;
+      el('eventCard').querySelector('.bookmark-button').addEventListener('click', () => {
+        const key = bookmarkKey(item);
+        if (state.bookmarks.has(key)) {
+          state.bookmarks.delete(key);
+          showToast('Removed from bookmarks');
+        } else {
+          state.bookmarks.add(key);
+          showToast('Saved to bookmarks');
+        }
+        renderCard();
+      });
+    }
+
+    function selectItem(index, pan = false) {
+      if (!state.filtered.length) return;
+      state.selected = (index + state.filtered.length) % state.filtered.length;
+      renderCard();
+      renderMarkers();
+      const item = state.filtered[state.selected];
+      if (pan) map.flyTo({ center: [item.lng, item.lat], zoom: Math.max(map.getZoom(), 14), duration: 550 });
+    }
+
+    function applyFilters() {
+      const search = state.search.trim().toLowerCase();
+      const now = Date.now();
+      const recencyCutoff = now - 45 * 24 * 60 * 60 * 1000;
+      state.filtered = state.data.filter((item) => {
+        const matchesCategory = state.category === 'all' || categoryOf(item) === state.category;
+        const haystack = [titleOf(item), summaryOf(item), item['llm.district'], item.hashtag, item['llm.event_name']].join(' ').toLowerCase();
+        const postedAt = timestampOf(item.posted_at);
+        const condPosted = postedAt !== null && postedAt >= recencyCutoff;
+        const startDate = timestampOf(item['llm.start_date']);
+        const endDate = timestampOf(item['llm.end_date']);
+        const condStart = state.showWithoutDate ? startDate === null || startDate <= now : startDate !== null && startDate <= now;
+        const condEnd = state.showWithoutDate ? endDate === null || endDate >= now : endDate !== null && endDate >= now;
+        return condPosted && condStart && condEnd && matchesCategory && (!search || haystack.includes(search));
+      });
+      if (state.selected >= state.filtered.length) state.selected = 0;
+      renderFilters(); renderMarkers(); renderCard();
+    }
+
+    async function loadData() {
+      const requestId = ++state.loadRequest;
+      const fileName = 'final_file.json';
+      try {
+        const response = await fetch(fileName);
+        if (!response.ok) throw new Error(`Data file unavailable: ${fileName}`);
+        const json = await response.json();
+        if (requestId !== state.loadRequest) return;
+        const coordinateUsage = new Map();
+        state.data = (Array.isArray(json) ? json : []).map((item, index) => normalize(item, index, coordinateUsage));
+      } catch (error) {
+        if (requestId !== state.loadRequest) return;
+        const coordinateUsage = new Map();
+        state.data = fallbackData.map((item, index) => normalize(item, index, coordinateUsage));
+        showToast(`${fileName} unavailable; preview data loaded`);
+      }
+      el('datasetLabel').textContent = state.showWithoutDate ? 'Showing all recent events' : 'Showing events with explicit dates';
+      applyFilters();
+    }
+
+    el('searchInput').addEventListener('input', (event) => { state.search = event.target.value; state.selected = 0; applyFilters(); });
+    el('clearSearch').addEventListener('click', () => { el('searchInput').value = ''; state.search = ''; state.selected = 0; applyFilters(); });
+    el('datasetToggle').addEventListener('change', (event) => {
+      state.showWithoutDate = event.target.checked;
+      state.selected = 0;
+      el('datasetLabel').textContent = state.showWithoutDate ? 'Showing all recent events' : 'Showing events with explicit dates';
+      applyFilters();
+    });
+    document.querySelectorAll('.nav-item').forEach((button) => button.addEventListener('click', () => { document.querySelectorAll('.nav-item').forEach((item) => item.classList.remove('active')); if (button.dataset.nav !== 'Create') button.classList.add('active'); showToast(button.dataset.nav === 'Discover' ? 'Discovering nearby hits' : `${button.dataset.nav} is coming soon`); }));
+    loadData();
+  </script>
+</body>
+</html>
