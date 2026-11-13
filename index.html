@@ -67,7 +67,7 @@
     .clear-button { width: 1.8rem; height: 1.8rem; border-radius: 50%; font-size: 1rem; }
     .clear-button:hover { background: #edf2eb; color: var(--ink); }
 
-    .filters { display: flex; gap: .5rem; padding: .7rem .25rem 0; overflow-x: auto; scrollbar-width: none; }
+    .filters { display: flex; gap: .5rem; padding: .7rem .25rem 0; overflow-x: auto; scroll-behavior: smooth; scrollbar-width: none; }
     .filters::-webkit-scrollbar { display: none; }
     .dataset-toggle {
       display: flex;
@@ -106,6 +106,7 @@
       transition: .2s ease;
     }
     .filter-pill:hover { transform: translateY(-1px); }
+    .filter-pill > span:first-child { color: var(--category-color, var(--green)); }
     .filter-pill.active { color: #153c2b; background: var(--lime); border-color: var(--lime); }
     .pill-count { color: inherit; opacity: .7; }
 
@@ -148,7 +149,7 @@
     .event-body { min-width: 0; min-height: 0; padding: clamp(.8rem, 2.5vw, 1rem); overflow-x: hidden; overflow-y: auto; overflow-wrap: break-word; word-break: break-word; }
     .event-topline { display: flex; align-items: center; justify-content: space-between; gap: .5rem; min-width: 0; margin-bottom: .5rem; }
     .badge { display: inline-flex; align-items: center; min-width: 0; max-width: 100%; gap: .28rem; overflow: hidden; color: var(--green); font-size: .67rem; font-weight: 700; letter-spacing: .08em; text-overflow: ellipsis; text-transform: uppercase; white-space: nowrap; }
-    .badge::before { content: ''; width: .42rem; height: .42rem; border-radius: 50%; background: var(--orange); }
+    .badge::before { content: ''; width: .42rem; height: .42rem; border-radius: 50%; background: var(--category-color, var(--orange)); }
     .event-index { color: #a0aaa4; font-size: .7rem; font-weight: 600; }
     .bookmark-button { display: grid; place-items: center; width: 1.9rem; height: 1.9rem; padding: 0; border: 1px solid var(--line); border-radius: 50%; color: var(--muted); background: rgba(255,255,255,.7); cursor: pointer; }
     .bookmark-button:hover, .bookmark-button[aria-pressed="true"] { color: var(--green); border-color: #b7d4be; background: #eaf5e9; }
@@ -173,6 +174,28 @@
     .navigate-button { border: 0; color: #fff; background: var(--green); }
     .navigate-button:hover { background: #225e44; }
     .empty-state { padding: 1.4rem; text-align: center; color: var(--muted); background: var(--card); border-radius: 1.2rem; box-shadow: var(--shadow); }
+
+    .list-toggle { display: inline-flex; align-items: center; justify-content: center; gap: .45rem; width: 100%; margin-top: .65rem; padding: .65rem .8rem; border: 1px solid rgba(255,255,255,.82); border-radius: .8rem; color: var(--ink); background: var(--card); box-shadow: 0 5px 16px rgba(31,47,39,.08); cursor: pointer; font: 700 .76rem 'DM Sans', sans-serif; }
+    .hit-list-panel { position: fixed; z-index: 7; top: 1rem; bottom: 1rem; left: 7rem; display: flex; flex-direction: column; width: min(23rem, 34vw); min-width: 18rem; overflow: hidden; border: 1px solid rgba(255,255,255,.85); border-radius: 1.2rem; background: rgba(255,255,255,.94); box-shadow: var(--shadow); backdrop-filter: blur(18px); pointer-events: auto; }
+    .hit-list-panel.collapsed { display: none; }
+    .hit-list-heading { display: flex; align-items: center; justify-content: space-between; gap: .6rem; padding: 1rem 1rem .75rem; border-bottom: 1px solid var(--line); }
+    .hit-list-heading h2 { margin: 0; font: 700 1rem 'Space Grotesk', sans-serif; }
+    .hit-list-count { color: var(--muted); font-size: .73rem; }
+    .list-close { display: grid; place-items: center; width: 2rem; height: 2rem; border: 0; border-radius: 50%; color: var(--muted); background: transparent; cursor: pointer; font-size: 1.2rem; }
+    .list-close:hover { background: #edf2eb; color: var(--ink); }
+    .hit-list-items { min-height: 0; overflow-y: auto; overscroll-behavior: contain; }
+    .hit-list-item { display: grid; grid-template-columns: 4.25rem minmax(0, 1fr); gap: .7rem; padding: .8rem; border-bottom: 1px solid var(--line); cursor: pointer; transition: background .16s ease; }
+    .hit-list-item:hover, .hit-list-item.selected { background: #f0f6ed; }
+    .hit-list-item.selected { box-shadow: inset 3px 0 var(--green); }
+    .list-thumb { width: 4.25rem; height: 4.25rem; border-radius: .65rem; object-fit: cover; background: #e5ede5; }
+    .list-item-body { min-width: 0; }
+    .list-item-title { margin: 0; overflow: hidden; font-size: .84rem; font-weight: 700; text-overflow: ellipsis; white-space: nowrap; }
+    .list-item-place, .list-item-date { margin: .22rem 0 0; overflow: hidden; color: var(--muted); font-size: .7rem; text-overflow: ellipsis; white-space: nowrap; }
+    .list-item-category { display: inline-flex; align-items: center; gap: .25rem; margin-top: .35rem; padding: .2rem .42rem; border-radius: 99rem; color: var(--category-color, var(--green)); background: color-mix(in srgb, var(--category-color, var(--green)) 12%, white); font-size: .62rem; font-weight: 700; }
+    .list-item-actions { display: flex; gap: .55rem; margin-top: .38rem; font-size: .67rem; font-weight: 700; }
+    .list-item-actions a { color: var(--green); text-decoration: none; }
+    .list-item-actions a:hover { text-decoration: underline; }
+    .list-item-actions .disabled-action { color: #a0aaa4; }
 
     .bottom-nav {
       position: fixed;
@@ -200,11 +223,18 @@
     @keyframes card-in { from { opacity: 0; transform: translateY(.6rem); } to { opacity: 1; transform: translateY(0); } }
     @media (min-width: 800px) {
       .brand-mark { display: flex; }
-      .top-controls { top: 1.5rem; }
+      .top-controls { top: 1.5rem; left: calc(7rem + min(23rem, 34vw) + 1rem); width: min(34rem, calc(100vw - 7rem - min(23rem, 34vw) - 3rem)); transform: none; }
       .bottom-sheet { right: 2rem; bottom: 2rem; left: auto; width: min(38rem, 90vw); transform: none; }
       .event-card { width: min(38rem, 90vw); max-height: min(32rem, calc(100vh - 4rem)); }
       .bottom-nav { top: 50%; right: auto; bottom: auto; left: 1.5rem; width: 4.6rem; min-height: 26rem; grid-template-columns: 1fr; grid-template-rows: repeat(5, 1fr); transform: translateY(-50%); border: 1px solid rgba(221,230,220,.9); border-radius: 1.4rem; box-shadow: var(--shadow); }
       .create-button { top: 0; margin-bottom: 0; }
+    }
+    @media (max-width: 799px) {
+      .hit-list-panel { top: auto; right: .6rem; bottom: 5rem; left: .6rem; width: auto; min-width: 0; max-height: min(56vh, 30rem); transform: translateY(calc(100% + 1rem)); opacity: 0; visibility: hidden; transition: transform .24s ease, opacity .2s ease, visibility .24s; }
+      .hit-list-panel.open { transform: translateY(0); opacity: 1; visibility: visible; }
+      .hit-list-heading { padding: .75rem .9rem .6rem; }
+      .hit-list-item { grid-template-columns: 3.5rem minmax(0, 1fr); gap: .6rem; padding: .65rem .8rem; }
+      .list-thumb { width: 3.5rem; height: 3.5rem; }
     }
     @media (prefers-reduced-motion: reduce) { *, *::before, *::after { animation-duration: .01ms !important; transition-duration: .01ms !important; } }
   </style>
@@ -228,7 +258,16 @@
           <span class="dataset-switch" aria-hidden="true"></span>
         </label>
       </div>
+      <button id="listToggle" class="list-toggle" type="button" aria-expanded="false" aria-controls="hitPointList">☷ Hit Point List <span id="listToggleCount">(0)</span></button>
     </header>
+
+    <aside id="hitPointList" class="hit-list-panel" aria-label="Hit Point List">
+      <div class="hit-list-heading">
+        <div><h2>Hit Point List</h2><span id="hitListCount" class="hit-list-count">0 points</span></div>
+        <button id="listClose" class="list-close" type="button" aria-label="Close list">×</button>
+      </div>
+      <div id="hitListItems" class="hit-list-items"></div>
+    </aside>
 
     <section class="bottom-sheet" aria-live="polite">
       <div class="sheet-handle" aria-hidden="true"></div>
@@ -254,7 +293,19 @@
       { hashtag: 'artweekend', category: 'show', cover_url: 'https://images.unsplash.com/photo-1561214115-f2f134cc4912?auto=format&fit=crop&w=700&q=80', likes: 6700, comments: 43, posted_at: 1791842240000, gmap_url: 'https://www.google.com/maps/search/?api=1&query=Tai+Kwun+Hong+Kong', 'llm.place_name': '大館當代展覽', 'llm.district': '中環', 'llm.category': 'show', 'llm.summary': '新媒體藝術與城市聲音的沉浸式展覽', 'llm.event_name': 'City Frequencies', 'llm.opening_hours': '11:00 - 19:00', spike_velocity: 402.18, lat: 22.281, lng: 114.154 }
     ];
 
-    const categoryMeta = { all: { label: 'All', icon: '✦' }, eat: { label: 'Eat', icon: '●' }, show: { label: 'Show', icon: '♫' }, play: { label: 'Play', icon: '✚' } };
+    const categoryMeta = {
+      all: { label: 'All', icon: '✦', color: '#2e7d5b' },
+      announce: { label: 'Announce', icon: '📣', color: '#e65f64' },
+      ticket: { label: 'Ticket', icon: '🎟', color: '#9b59b6' },
+      vendor: { label: 'Vendor', icon: '▦', color: '#d9822b' },
+      recap: { label: 'Recap', icon: '↻', color: '#5078c8' },
+      guide: { label: 'Guide', icon: '☷', color: '#008b8b' },
+      news: { label: 'News', icon: '◉', color: '#cc4778' },
+      promo: { label: 'Promo', icon: '％', color: '#ca8a04' },
+      place: { label: 'Place', icon: '⌖', color: '#2e8b57' },
+      workshop: { label: 'Workshop', icon: '⚒', color: '#7456c8' },
+      other: { label: 'Other', icon: '✧', color: '#66736d' }
+    };
     const state = { data: [], filtered: [], category: 'all', search: '', selected: 0, markers: new Map(), bookmarks: new Set(), showWithoutDate: false, loadRequest: 0 };
     mapboxgl.accessToken = 'pk.eyJ1IjoiYXJ3aW5nYm95IiwiYSI6ImNtdnI4NDZmcTA1MWMyenB6Y291Y3RiN2QifQ.n1nobP2xHysAYss5qu9wMA';
     const map = new mapboxgl.Map({
@@ -269,7 +320,25 @@
 
     const el = (id) => document.getElementById(id);
     const escapeHtml = (value) => String(value ?? '').replace(/[&<>'"]/g, (char) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', "'": '&#39;', '"': '&quot;' }[char]));
-    const categoryOf = (item) => String(item.category || item['llm.category'] || 'show').toLowerCase();
+    const categoryAliases = {
+      eat: 'place',
+      show: 'announce',
+      play: 'other',
+      event_announcement: 'announce',
+      ticket_sale_resale: 'ticket',
+      vendor_recruitment: 'vendor',
+      recap_review: 'recap',
+      guide_roundup: 'guide',
+      news_notice: 'news',
+      promotion_ad: 'promo',
+      place_recommendation: 'place',
+      workshop_registration: 'workshop'
+    };
+    const categoryOf = (item) => {
+      const value = String(item['llm.content_type'] || item.category || item['llm.category'] || 'other').trim().toLowerCase();
+      const category = categoryAliases[value] || value;
+      return Object.prototype.hasOwnProperty.call(categoryMeta, category) && category !== 'all' ? category : 'other';
+    };
     const titleOf = (item) => item['llm.place_name'] || item['llm.event_name'] || 'Untitled hit point';
     const summaryOf = (item) => item['llm.summary'] || 'A new point worth discovering.';
     const formatNumber = (value) => new Intl.NumberFormat('en', { notation: 'compact', maximumFractionDigits: 1 }).format(Number(value) || 0);
@@ -309,6 +378,17 @@
       return null;
     }
 
+    function hasKnownLocationName(value) {
+      const text = String(value ?? '').trim().toLowerCase();
+      return Boolean(text) && text !== '未知' && text !== 'unknown' && text !== 'n/a';
+    }
+
+    function hasKnownLocation(item) {
+      return Number.isFinite(item.lat) && Number.isFinite(item.lng) &&
+        item.lat >= -90 && item.lat <= 90 && item.lng >= -180 && item.lng <= 180 &&
+        [item['llm.place_name'], item.place_name, item['llm.district'], item.district].some(hasKnownLocationName);
+    }
+
     function googleMapsUrl(item) {
       const place = item['llm.place_name'] || item['llm.event_name'] || item.place_name || item.event_name || '';
       const district = item['llm.district'] || item.district || '';
@@ -317,40 +397,59 @@
     }
 
     function normalize(item, index, coordinateUsage) {
-      const fallbackCoords = [[22.276, 114.171], [22.319, 114.169], [22.282, 114.158], [22.281, 114.154], [22.297, 114.172]];
       const latitude = coordinateValue(item, ['lat', 'latitude', 'place_lat', 'place_latitude', 'llm.lat', 'llm.latitude', 'coordinates.lat', 'location.lat', (value) => value.coordinates?.latitude, (value) => value.location?.latitude]);
       const longitude = coordinateValue(item, ['lng', 'lon', 'longitude', 'place_lng', 'place_longitude', 'llm.lng', 'llm.longitude', 'coordinates.lng', 'coordinates.lon', 'location.lng', (value) => value.coordinates?.longitude, (value) => value.location?.longitude]);
-      const hasCoordinates = latitude !== null && longitude !== null;
-      const baseCoords = hasCoordinates ? [latitude, longitude] : fallbackCoords[index % fallbackCoords.length];
-      const coordinateKey = `${baseCoords[0].toFixed(7)},${baseCoords[1].toFixed(7)}`;
-      const duplicateIndex = coordinateUsage.get(coordinateKey) || 0;
-      coordinateUsage.set(coordinateKey, duplicateIndex + 1);
-      const angle = duplicateIndex * Math.PI / 4;
-      const ring = Math.floor(duplicateIndex / 8) + 1;
-      const offset = duplicateIndex ? 0.00012 * ring : 0;
-      const coords = [baseCoords[0] + Math.sin(angle) * offset, baseCoords[1] + Math.cos(angle) * offset];
+      const hasCoordinates = latitude !== null && longitude !== null &&
+        latitude >= -90 && latitude <= 90 && longitude >= -180 && longitude <= 180;
+      const locationNameKnown = [item['llm.place_name'], item.place_name, item['llm.district'], item.district].some(hasKnownLocationName);
+      let lat = null;
+      let lng = null;
+      if (hasCoordinates && locationNameKnown) {
+        const coordinateKey = `${latitude.toFixed(7)},${longitude.toFixed(7)}`;
+        const duplicateIndex = coordinateUsage.get(coordinateKey) || 0;
+        coordinateUsage.set(coordinateKey, duplicateIndex + 1);
+        const angle = duplicateIndex * Math.PI / 4;
+        const ring = Math.floor(duplicateIndex / 8) + 1;
+        const offset = duplicateIndex ? 0.00012 * ring : 0;
+        lat = latitude + Math.sin(angle) * offset;
+        lng = longitude + Math.cos(angle) * offset;
+      }
       const coverPath = String(item.cover_path || '').replace(/\\/g, '/');
       const coverFileName = coverPath.split('/').pop();
       const localCoverUrl = coverFileName ? `covers/${encodeURIComponent(coverFileName)}` : '';
-      return { ...item, category: categoryOf(item), lat: coords[0], lng: coords[1], cover_url: localCoverUrl || item.cover_url || '', gmap_url: googleMapsUrl(item) };
+      return { ...item, category: categoryOf(item), lat, lng, cover_url: localCoverUrl || item.cover_url || '', gmap_url: googleMapsUrl(item) };
+    }
+
+    function matchesSearchAndDates(item, search, now, recencyCutoff) {
+      const haystack = [titleOf(item), summaryOf(item), item['llm.place_name'], item['llm.district'], item.hashtag, item['llm.event_name'], categoryOf(item)].join(' ').toLowerCase();
+      const postedAt = timestampOf(item.posted_at);
+      const condPosted = postedAt !== null && postedAt >= recencyCutoff;
+      const startDate = timestampOf(item['llm.start_date']);
+      const endDate = timestampOf(item['llm.end_date']);
+      const condStart = state.showWithoutDate ? startDate === null || startDate <= now : startDate !== null && startDate <= now;
+      const condEnd = state.showWithoutDate ? endDate === null || endDate >= now : endDate !== null && endDate >= now;
+      return condPosted && condStart && condEnd && (!search || haystack.includes(search));
     }
 
     function renderFilters() {
-      const counts = state.data.reduce((acc, item) => { acc[categoryOf(item)] = (acc[categoryOf(item)] || 0) + 1; return acc; }, {});
-      el('filters').innerHTML = Object.entries(categoryMeta).map(([key, meta]) => `<button class="filter-pill ${state.category === key ? 'active' : ''}" data-category="${key}" type="button"><span>${meta.icon}</span>${meta.label}<span class="pill-count">${key === 'all' ? state.data.length : counts[key] || 0}</span></button>`).join('');
+      const search = state.search.trim().toLowerCase();
+      const now = Date.now();
+      const recencyCutoff = now - 45 * 24 * 60 * 60 * 1000;
+      const matchingItems = state.data.filter((item) => matchesSearchAndDates(item, search, now, recencyCutoff));
+      const counts = matchingItems.reduce((acc, item) => { acc[categoryOf(item)] = (acc[categoryOf(item)] || 0) + 1; return acc; }, {});
+      el('filters').innerHTML = Object.entries(categoryMeta).map(([key, meta]) => `<button class="filter-pill ${state.category === key ? 'active' : ''}" data-category="${key}" type="button" style="--category-color:${meta.color}"><span>${meta.icon}</span>${meta.label}<span class="pill-count">${key === 'all' ? matchingItems.length : counts[key] || 0}</span></button>`).join('');
       el('filters').querySelectorAll('[data-category]').forEach((button) => button.addEventListener('click', () => { state.category = button.dataset.category; state.selected = 0; applyFilters(); }));
     }
 
     function markerIcon(item, active = false) {
-      const colors = { eat: 'var(--orange)', show: 'var(--pink)', play: 'var(--blue)' };
-      const icons = { eat: '●', show: '♫', play: '✚' };
+      const meta = categoryMeta[categoryOf(item)] || categoryMeta.other;
       const element = document.createElement('button');
       element.type = 'button';
       element.className = 'custom-marker';
       element.title = titleOf(item);
       element.setAttribute('aria-label', titleOf(item));
-      element.style.cssText = `width:${active ? 42 : 34}px;height:${active ? 42 : 34}px;border:${active ? '4px solid #fff' : '3px solid rgba(255,255,255,.9)'};border-radius:50%;display:grid;place-items:center;padding:0;color:#fff;background:${colors[item.category] || 'var(--green)'};box-shadow:0 6px 16px rgba(31,47,39,.25);font:700 ${active ? 19 : 15}px Arial;cursor:pointer;`;
-      element.textContent = icons[item.category] || '✦';
+      element.style.cssText = `width:${active ? 42 : 34}px;height:${active ? 42 : 34}px;border:${active ? '4px solid #fff' : '3px solid rgba(255,255,255,.9)'};border-radius:50%;display:grid;place-items:center;padding:0;color:#fff;background:${meta.color};box-shadow:0 6px 16px rgba(31,47,39,.25);font:700 ${active ? 19 : 15}px Arial;cursor:pointer;`;
+      element.textContent = meta.icon;
       return element;
     }
 
@@ -358,6 +457,7 @@
       state.markers.forEach((marker) => marker.remove());
       state.markers.clear();
       state.filtered.forEach((item, index) => {
+        if (!hasKnownLocation(item)) return;
         const marker = new mapboxgl.Marker({ element: markerIcon(item, index === state.selected), anchor: 'center' })
           .setLngLat([item.lng, item.lat])
           .setPopup(new mapboxgl.Popup({ offset: 24, closeButton: false }).setText(titleOf(item)))
@@ -367,17 +467,48 @@
       });
     }
 
+    function renderHitList() {
+      const fallbackImage = 'https://images.unsplash.com/photo-1517457373958-b7bdd4587205?auto=format&fit=crop&w=160&q=80';
+      el('hitListCount').textContent = `${state.filtered.length} ${state.filtered.length === 1 ? 'point' : 'points'}`;
+      el('listToggleCount').textContent = `(${state.filtered.length})`;
+      el('hitListItems').innerHTML = state.filtered.map((item, index) => {
+        const category = categoryOf(item);
+        const meta = categoryMeta[category] || categoryMeta.other;
+        const title = item['llm.event_name'] || item['llm.place_name'] || 'Untitled hit point';
+        const place = [item['llm.place_name'], item.place_name].find(hasKnownLocationName) || '未知';
+        const dateTime = [formatDateRange(item) || formatDate(item.posted_at), item['llm.opening_hours']].filter(Boolean).join(' · ') || '日期未知';
+        const image = item.cover_url || fallbackImage;
+        const instagram = item.url ? `<a href="${escapeHtml(item.url)}" target="_blank" rel="noopener">IG Post ↗</a>` : '';
+        const navigate = hasKnownLocation(item) ? `<a href="${escapeHtml(item.gmap_url)}" target="_blank" rel="noopener">Navigate ↗</a>` : '<span class="disabled-action">地圖位置未知</span>';
+        return `<article class="hit-list-item ${index === state.selected ? 'selected' : ''}" data-list-index="${index}" tabindex="0" role="button" aria-pressed="${index === state.selected}" style="--category-color:${meta.color}"><img class="list-thumb" src="${escapeHtml(image)}" alt="" loading="lazy" onerror="this.onerror=null;this.src='${fallbackImage}'"><div class="list-item-body"><h3 class="list-item-title" title="${escapeHtml(title)}">${escapeHtml(title)}</h3><p class="list-item-place">地點：${escapeHtml(place)}</p><span class="list-item-category">${meta.icon} ${escapeHtml(meta.label)}</span><p class="list-item-date">${escapeHtml(dateTime)}</p><div class="list-item-actions">${instagram}${navigate}</div></div></article>`;
+      }).join('') || '<div class="empty-state">No hit points match that search.</div>';
+      el('hitListItems').querySelectorAll('[data-list-index]').forEach((row) => {
+        const select = () => selectItem(Number(row.dataset.listIndex), true);
+        row.addEventListener('click', (event) => {
+          if (event.target.closest('a')) return;
+          select();
+        });
+        row.addEventListener('keydown', (event) => {
+          if (event.key === 'Enter' || event.key === ' ') {
+            event.preventDefault();
+            select();
+          }
+        });
+      });
+    }
+
     function renderCard() {
       const item = state.filtered[state.selected];
       if (!item) { el('eventCard').innerHTML = '<div class="empty-state">No hit points match that search.</div>'; return; }
       const eventName = item['llm.event_name'] || '';
       const placeName = item['llm.place_name'] || '';
-      const title = eventName || placeName;
+      const title = eventName || placeName || 'Untitled hit point';
       const category = categoryOf(item);
+      const categoryLabel = categoryMeta[category].label;
       const dateRange = formatDateRange(item);
       const hours = item['llm.opening_hours'] || formatDate(item.posted_at);
       const unknown = '未知';
-      const district = item['llm.district'] || unknown;
+      const district = item['llm.district'] || item.district || placeName || unknown;
       const date = dateRange || unknown;
       const openingHours = hours || unknown;
       const price = item['llm.price'] || unknown;
@@ -390,7 +521,7 @@
       const isBookmarked = state.bookmarks.has(bookmarkKey(item));
       const fallbackImage = 'https://images.unsplash.com/photo-1517457373958-b7bdd4587205?auto=format&fit=crop&w=700&q=80';
       const imageUrl = item.cover_url || fallbackImage;
-      el('eventCard').innerHTML = `<article class="event-card"><img class="cover" src="${escapeHtml(imageUrl)}" width="700" height="700" loading="lazy" decoding="async" alt="${escapeHtml(title)}" onerror="if (!this.dataset.fallback) { this.dataset.fallback='true'; this.src='${fallbackImage}'; }"><div class="event-body"><div class="event-topline"><span class="badge">${escapeHtml(category)} · ${escapeHtml(statusOf(item))}</span><div style="display:flex;align-items:center;gap:.45rem"><span class="event-index">${state.selected + 1} / ${state.filtered.length}</span><button class="bookmark-button" type="button" aria-label="${isBookmarked ? 'Remove bookmark' : 'Bookmark event'}" aria-pressed="${isBookmarked}"><svg viewBox="0 0 24 24" fill="${isBookmarked ? 'currentColor' : 'none'}" stroke="currentColor" stroke-width="1.8"><path d="M6 4.8A2.8 2.8 0 0 1 8.8 2h6.4A2.8 2.8 0 0 1 18 4.8V21l-6-3.5L6 21V4.8Z"></path></svg></button></div></div><h2 class="event-title" title="${escapeHtml(title)}">${escapeHtml(title)}</h2>${eventName && placeName ? `<p class="event-subtitle" title="${escapeHtml(placeName)}">${escapeHtml(placeName)}</p>` : ''}<p class="event-summary">${escapeHtml(summaryOf(item))}</p><div class="metadata">${details}</div><div class="card-actions"><div class="stats-row"><span>♡ <strong>${formatNumber(item.likes)}</strong></span>${item.spike_score !== undefined && item.spike_score !== null ? `<span>↗ <strong>Spike Score: ${escapeHtml(Number(item.spike_score).toFixed(1))}</strong></span>` : ''}</div><div class="action-links"><a class="instagram-button" href="${escapeHtml(item.url || '#')}" target="_blank" rel="noopener">IG Post ↗</a><a class="navigate-button" href="${escapeHtml(item.gmap_url || '#')}" target="_blank" rel="noopener">Navigate ↗</a></div></div></div></article>`;
+      el('eventCard').innerHTML = `<article class="event-card"><img class="cover" src="${escapeHtml(imageUrl)}" width="700" height="700" loading="lazy" decoding="async" alt="${escapeHtml(title)}" onerror="if (!this.dataset.fallback) { this.dataset.fallback='true'; this.src='${fallbackImage}'; }"><div class="event-body"><div class="event-topline"><span class="badge" style="--category-color:${categoryMeta[category].color}">${escapeHtml(categoryLabel)} · ${escapeHtml(statusOf(item))}</span><div style="display:flex;align-items:center;gap:.45rem"><span class="event-index">${state.selected + 1} / ${state.filtered.length}</span><button class="bookmark-button" type="button" aria-label="${isBookmarked ? 'Remove bookmark' : 'Bookmark event'}" aria-pressed="${isBookmarked}"><svg viewBox="0 0 24 24" fill="${isBookmarked ? 'currentColor' : 'none'}" stroke="currentColor" stroke-width="1.8"><path d="M6 4.8A2.8 2.8 0 0 1 8.8 2h6.4A2.8 2.8 0 0 1 18 4.8V21l-6-3.5L6 21V4.8Z"></path></svg></button></div></div><h2 class="event-title" title="${escapeHtml(title)}">${escapeHtml(title)}</h2>${eventName && placeName ? `<p class="event-subtitle" title="${escapeHtml(placeName)}">${escapeHtml(placeName)}</p>` : ''}<p class="event-summary">${escapeHtml(summaryOf(item))}</p><div class="metadata">${details}</div><div class="card-actions"><div class="stats-row"><span>♡ <strong>${formatNumber(item.likes)}</strong></span>${item.spike_score !== undefined && item.spike_score !== null ? `<span>↗ <strong>Spike Score: ${escapeHtml(Number(item.spike_score).toFixed(1))}</strong></span>` : ''}</div><div class="action-links"><a class="instagram-button" href="${escapeHtml(item.url || '#')}" target="_blank" rel="noopener">IG Post ↗</a>${hasKnownLocation(item) ? `<a class="navigate-button" href="${escapeHtml(item.gmap_url)}" target="_blank" rel="noopener">Navigate ↗</a>` : ''}</div></div></div></article>`;
       el('eventCard').querySelector('.bookmark-button').addEventListener('click', () => {
         const key = bookmarkKey(item);
         if (state.bookmarks.has(key)) {
@@ -409,8 +540,9 @@
       state.selected = (index + state.filtered.length) % state.filtered.length;
       renderCard();
       renderMarkers();
+      renderHitList();
       const item = state.filtered[state.selected];
-      if (pan) map.flyTo({ center: [item.lng, item.lat], zoom: Math.max(map.getZoom(), 14), duration: 550 });
+      if (pan && hasKnownLocation(item)) map.flyTo({ center: [item.lng, item.lat], zoom: Math.max(map.getZoom(), 14), duration: 550 });
     }
 
     function applyFilters() {
@@ -419,17 +551,10 @@
       const recencyCutoff = now - 45 * 24 * 60 * 60 * 1000;
       state.filtered = state.data.filter((item) => {
         const matchesCategory = state.category === 'all' || categoryOf(item) === state.category;
-        const haystack = [titleOf(item), summaryOf(item), item['llm.district'], item.hashtag, item['llm.event_name']].join(' ').toLowerCase();
-        const postedAt = timestampOf(item.posted_at);
-        const condPosted = postedAt !== null && postedAt >= recencyCutoff;
-        const startDate = timestampOf(item['llm.start_date']);
-        const endDate = timestampOf(item['llm.end_date']);
-        const condStart = state.showWithoutDate ? startDate === null || startDate <= now : startDate !== null && startDate <= now;
-        const condEnd = state.showWithoutDate ? endDate === null || endDate >= now : endDate !== null && endDate >= now;
-        return condPosted && condStart && condEnd && matchesCategory && (!search || haystack.includes(search));
+        return matchesSearchAndDates(item, search, now, recencyCutoff) && matchesCategory;
       });
       if (state.selected >= state.filtered.length) state.selected = 0;
-      renderFilters(); renderMarkers(); renderCard();
+      renderFilters(); renderMarkers(); renderCard(); renderHitList();
     }
 
     async function loadData() {
@@ -460,6 +585,22 @@
       el('datasetLabel').textContent = state.showWithoutDate ? 'Showing all recent events' : 'Showing events with explicit dates';
       applyFilters();
     });
+    function setListOpen(open) {
+      const panel = el('hitPointList');
+      const mobile = window.matchMedia('(max-width: 799px)').matches;
+      panel.classList.remove('collapsed', 'open');
+      if (mobile) panel.classList.toggle('open', open);
+      else panel.classList.toggle('collapsed', !open);
+      el('listToggle').setAttribute('aria-expanded', String(open));
+    }
+    window.matchMedia('(max-width: 799px)').addEventListener('change', (event) => setListOpen(!event.matches));
+    el('listToggle').addEventListener('click', () => {
+      const mobile = window.matchMedia('(max-width: 799px)').matches;
+      const isOpen = mobile ? el('hitPointList').classList.contains('open') : !el('hitPointList').classList.contains('collapsed');
+      setListOpen(!isOpen);
+    });
+    el('listClose').addEventListener('click', () => setListOpen(false));
+    setListOpen(!window.matchMedia('(max-width: 799px)').matches);
     document.querySelectorAll('.nav-item').forEach((button) => button.addEventListener('click', () => { document.querySelectorAll('.nav-item').forEach((item) => item.classList.remove('active')); if (button.dataset.nav !== 'Create') button.classList.add('active'); showToast(button.dataset.nav === 'Discover' ? 'Discovering nearby hits' : `${button.dataset.nav} is coming soon`); }));
     loadData();
   </script>
