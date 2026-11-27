@@ -184,7 +184,11 @@
     .view-heading h1 { margin: 0; font: 700 1.3rem 'Space Grotesk', sans-serif; }
     .view-heading p { margin: .25rem 0 0; color: var(--muted); font-size: .78rem; }
     .view-back { flex: 0 0 auto; padding: .55rem .8rem; border: 1px solid var(--line); border-radius: .7rem; color: var(--green); background: #fff; cursor: pointer; font: 700 .75rem 'DM Sans', sans-serif; }
-    .hit-list-panel { inset: 1rem 1rem 1rem 7rem; }
+    .hit-list-panel { inset: 1rem 1rem 1rem 7rem; transition: transform .22s ease; }
+    .hit-list-handle { display: grid; flex: 0 0 1.35rem; place-items: center; width: 100%; padding: 0; border: 0; border-radius: 1.15rem 1.15rem 0 0; background: #111; cursor: grab; touch-action: none; }
+    .hit-list-handle:active { cursor: grabbing; }
+    .hit-list-handle span { display: block; width: 2.5rem; height: .22rem; border-radius: 99rem; background: #fff; }
+    .hit-list-panel.is-dragging { transition: none; }
     .hit-list-heading { display: flex; align-items: center; justify-content: space-between; gap: .6rem; padding: 1rem 1rem .75rem; border-bottom: 1px solid var(--line); }
     .hit-list-heading h2 { margin: 0; font: 700 1rem 'Space Grotesk', sans-serif; }
     .hit-list-count { color: var(--muted); font-size: .73rem; }
@@ -261,6 +265,8 @@
     @keyframes card-in { from { opacity: 0; transform: translateY(.6rem); } to { opacity: 1; transform: translateY(0); } }
     @media (min-width: 800px) {
       .brand-mark { display: flex; }
+      .hit-list-panel { inset: 1rem auto 1rem 7rem; width: min(23rem, 34vw); min-width: 18rem; }
+      body[data-view="activity"] .top-controls { display: block; }
       .top-controls { top: 1.5rem; left: calc(7rem + min(23rem, 34vw) + 1rem); width: min(34rem, calc(100vw - 7rem - min(23rem, 34vw) - 3rem)); transform: none; }
       .bottom-sheet { right: 2rem; bottom: 2rem; left: auto; width: min(38rem, 90vw); transform: none; }
       .event-card { width: min(38rem, 90vw); max-height: min(32rem, calc(100vh - 4rem)); }
@@ -270,6 +276,7 @@
     @media (max-width: 799px) {
       .view-panel, .hit-list-panel { inset: 0 0 calc(4.5rem + env(safe-area-inset-bottom)) 0; width: auto; min-width: 0; border: 0; border-radius: 0; }
       .hit-list-panel { max-height: none; }
+      .hit-list-handle { border-radius: 0; }
       .hit-list-heading { padding: .75rem .9rem .6rem; }
       .hit-list-item { grid-template-columns: 3.5rem minmax(0, 1fr); gap: .6rem; padding: .65rem .8rem; }
       .list-thumb { width: 3.5rem; height: 3.5rem; }
@@ -312,6 +319,7 @@
     </header>
 
     <aside id="hitPointList" class="view-panel hit-list-panel" aria-label="Hit Point List">
+      <button id="hitListHandle" class="hit-list-handle" type="button" aria-label="Close Activity list; drag down to close" title="Tap to close or drag down to close"><span aria-hidden="true"></span></button>
       <div class="hit-list-heading">
         <div><h2>Activity</h2><span id="hitListCount" class="hit-list-count">0 points</span></div>
         <button class="view-back" type="button" data-go-home>‹ Home</button>
@@ -882,6 +890,60 @@
     el('filters').addEventListener('scroll', updateFilterScrollButtons, { passive: true });
     window.addEventListener('resize', updateFilterScrollButtons);
     document.querySelectorAll('[data-go-home]').forEach((button) => button.addEventListener('click', () => setActiveView('Home')));
+    const activityHandle = el('hitListHandle');
+    const activityPanel = el('hitPointList');
+    let handleStartY = null;
+    let handleDragDistance = 0;
+    let handleWasDragged = false;
+    let suppressHandleClick = false;
+    let suppressClickTimer = 0;
+    activityHandle.addEventListener('pointerdown', (event) => {
+      if (event.button !== 0) return;
+      window.clearTimeout(suppressClickTimer);
+      suppressHandleClick = false;
+      handleStartY = event.clientY;
+      handleDragDistance = 0;
+      handleWasDragged = false;
+      activityPanel.classList.add('is-dragging');
+      activityHandle.setPointerCapture(event.pointerId);
+    });
+    activityHandle.addEventListener('pointermove', (event) => {
+      if (handleStartY === null) return;
+      const delta = event.clientY - handleStartY;
+      if (Math.abs(delta) > 6) handleWasDragged = true;
+      handleDragDistance = Math.max(0, delta);
+      activityPanel.style.transform = `translateY(${handleDragDistance}px)`;
+      event.preventDefault();
+    });
+    activityHandle.addEventListener('pointerup', () => {
+      if (handleStartY === null) return;
+      const closeThreshold = Math.max(72, Math.min(140, activityPanel.offsetHeight * .18));
+      const closePanel = handleDragDistance >= closeThreshold;
+      handleStartY = null;
+      activityPanel.classList.remove('is-dragging');
+      activityPanel.style.transform = '';
+      if (handleWasDragged) {
+        suppressHandleClick = true;
+        suppressClickTimer = window.setTimeout(() => { suppressHandleClick = false; }, 350);
+      }
+      if (closePanel) setActiveView('Home');
+    });
+    activityHandle.addEventListener('pointercancel', () => {
+      if (handleStartY === null) return;
+      handleStartY = null;
+      activityPanel.classList.remove('is-dragging');
+      activityPanel.style.transform = '';
+      suppressHandleClick = false;
+    });
+    activityHandle.addEventListener('click', (event) => {
+      if (suppressHandleClick) {
+        event.preventDefault();
+        suppressHandleClick = false;
+        window.clearTimeout(suppressClickTimer);
+        return;
+      }
+      setActiveView('Home');
+    });
     document.querySelectorAll('.nav-item').forEach((button) => button.addEventListener('click', () => {
       const view = button.dataset.nav;
       if (view === 'Create') {
