@@ -130,10 +130,14 @@
       left: 50%;
       bottom: 4.65rem;
       width: min(100% - 1.2rem, 34rem);
-      transform: translateX(-50%);
+      transform: translateX(-50%) translateY(var(--card-drag-y, 0px));
+      transition: transform .24s ease;
     }
 
-    .sheet-handle { width: 2.8rem; height: .25rem; margin: 0 auto .65rem; border-radius: 99rem; background: rgba(23,35,31,.32); }
+    .sheet-handle { display: grid; place-items: center; width: 3.5rem; height: 2rem; margin: 0 auto .15rem; padding: 0; border: 0; border-radius: 99rem; background: transparent; cursor: grab; touch-action: none; }
+    .sheet-handle:active { cursor: grabbing; }
+    .sheet-handle span { display: block; width: 2.8rem; height: .25rem; border-radius: 99rem; background: rgba(23,35,31,.55); }
+    .bottom-sheet.is-card-dragging { transition: none; }
     .event-card {
       display: grid;
       grid-template-columns: 7.1rem minmax(0, 1fr);
@@ -148,6 +152,12 @@
       backdrop-filter: blur(18px);
       animation: card-in .28s ease both;
     }
+    .event-card-minimized { display: flex; align-items: center; gap: .75rem; min-height: 3.7rem; max-height: 3.7rem; padding: .45rem .65rem; border-radius: 1rem; }
+    .mini-card-content { display: flex; align-items: center; flex: 1 1 auto; min-width: 0; gap: .7rem; }
+    .mini-card-category { display: inline-flex; flex: 0 0 auto; align-items: center; gap: .35rem; color: var(--category-color, var(--green)); font-size: .68rem; font-weight: 700; text-transform: uppercase; }
+    .mini-card-category::before { content: ''; width: .48rem; height: .48rem; border-radius: 50%; background: var(--category-color, var(--green)); }
+    .mini-card-title { min-width: 0; margin: 0; overflow: hidden; font: 700 .92rem/1.2 'Space Grotesk', sans-serif; text-overflow: ellipsis; white-space: nowrap; }
+    .card-restore { display: grid; flex: 0 0 auto; width: 2.2rem; height: 2.2rem; place-items: center; border: 1px solid var(--line); border-radius: 50%; color: var(--green); background: #fff; cursor: pointer; font-size: 1.1rem; }
     .cover { display: block; width: 100%; max-width: 100%; height: 100%; min-height: 11rem; object-fit: cover; background: #d8e6d9; }
     .event-body { min-width: 0; min-height: 0; padding: clamp(.8rem, 2.5vw, 1rem); overflow-x: hidden; overflow-y: auto; overflow-wrap: break-word; word-break: break-word; }
     .event-topline { display: flex; align-items: center; justify-content: space-between; gap: .5rem; min-width: 0; margin-bottom: .5rem; }
@@ -184,11 +194,7 @@
     .view-heading h1 { margin: 0; font: 700 1.3rem 'Space Grotesk', sans-serif; }
     .view-heading p { margin: .25rem 0 0; color: var(--muted); font-size: .78rem; }
     .view-back { flex: 0 0 auto; padding: .55rem .8rem; border: 1px solid var(--line); border-radius: .7rem; color: var(--green); background: #fff; cursor: pointer; font: 700 .75rem 'DM Sans', sans-serif; }
-    .hit-list-panel { inset: 1rem 1rem 1rem 7rem; transition: transform .22s ease; }
-    .hit-list-handle { display: grid; flex: 0 0 1.35rem; place-items: center; width: 100%; padding: 0; border: 0; border-radius: 1.15rem 1.15rem 0 0; background: #111; cursor: grab; touch-action: none; }
-    .hit-list-handle:active { cursor: grabbing; }
-    .hit-list-handle span { display: block; width: 2.5rem; height: .22rem; border-radius: 99rem; background: #fff; }
-    .hit-list-panel.is-dragging { transition: none; }
+    .hit-list-panel { inset: 1rem 1rem 1rem 7rem; }
     .hit-list-heading { display: flex; align-items: center; justify-content: space-between; gap: .6rem; padding: 1rem 1rem .75rem; border-bottom: 1px solid var(--line); }
     .hit-list-heading h2 { margin: 0; font: 700 1rem 'Space Grotesk', sans-serif; }
     .hit-list-count { color: var(--muted); font-size: .73rem; }
@@ -226,8 +232,13 @@
     .upload-label { display: inline-flex; align-items: center; width: fit-content; padding: .55rem .75rem; border: 1px solid var(--line); border-radius: .65rem; color: var(--green); background: #fff; cursor: pointer; font-size: .78rem; font-weight: 700; }
     .upload-label input { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); }
     .saved-list { display: grid; gap: .65rem; }
+    .saved-group { display: grid; gap: .65rem; }
+    .saved-group > h3 { margin: .25rem 0 0; color: var(--ink); font: 700 .95rem 'Space Grotesk', sans-serif; }
+    .saved-group-items { display: grid; gap: .65rem; }
     .saved-item { display: grid; grid-template-columns: 4rem minmax(0, 1fr) auto; align-items: center; gap: .75rem; padding: .7rem; border: 1px solid var(--line); border-radius: .85rem; background: #fff; }
+    .saved-item.expired { grid-template-columns: minmax(0, 1fr) auto; }
     .saved-item .list-thumb { width: 4rem; height: 4rem; }
+    .saved-expired-label { display: inline-flex; margin-top: .2rem; padding: .18rem .45rem; border-radius: 999px; color: #7d3540; background: #f9e8e9; font-size: .68rem; font-weight: 700; }
     .saved-actions { display: flex; flex-wrap: wrap; justify-content: flex-end; gap: .4rem; }
     .saved-actions button, .saved-actions a { padding: .45rem .55rem; border: 1px solid var(--line); border-radius: .55rem; color: var(--green); background: #fff; text-decoration: none; cursor: pointer; font: 700 .68rem 'DM Sans', sans-serif; white-space: nowrap; }
     .saved-actions .remove-saved { color: #b34552; }
@@ -266,17 +277,23 @@
     @media (min-width: 800px) {
       .brand-mark { display: flex; }
       .hit-list-panel { inset: 1rem auto 1rem 7rem; width: min(23rem, 34vw); min-width: 18rem; }
-      body[data-view="activity"] .top-controls { display: block; }
-      .top-controls { top: 1.5rem; left: calc(7rem + min(23rem, 34vw) + 1rem); width: min(34rem, calc(100vw - 7rem - min(23rem, 34vw) - 3rem)); transform: none; }
-      .bottom-sheet { right: 2rem; bottom: 2rem; left: auto; width: min(38rem, 90vw); transform: none; }
+      body[data-view="activity"] .top-controls, body[data-view="activity"] .bottom-sheet { display: block; }
+      body[data-view="activity"] .bottom-sheet { width: min(38rem, calc(100vw - 7rem - max(18rem, min(23rem, 34vw)) - 4rem)); }
+      body[data-view="activity"] .bottom-sheet.is-minimized { width: min(25rem, calc(100vw - 7rem - max(18rem, min(23rem, 34vw)) - 4rem)); }
+      body[data-view="activity"] .event-card { width: 100%; }
+      .top-controls { top: 1.5rem; left: 50%; right: auto; width: min(34rem, calc(100vw - 16rem)); transform: translateX(-50%); }
+      body[data-view="activity"] .top-controls { left: calc(7rem + min(23rem, 34vw) + 1rem); width: min(34rem, calc(100vw - 7rem - min(23rem, 34vw) - 3rem)); transform: none; }
+      .bottom-sheet { right: 2rem; bottom: 2rem; left: auto; width: min(38rem, 90vw); transform: translateY(var(--card-drag-y, 0px)); }
       .event-card { width: min(38rem, 90vw); max-height: min(32rem, calc(100vh - 4rem)); }
+      .bottom-sheet.is-minimized { width: min(25rem, 90vw); }
+      .event-card.event-card-minimized { width: 100%; }
       .bottom-nav { top: 50%; right: auto; bottom: auto; left: 1.5rem; width: 4.6rem; min-height: 26rem; grid-template-columns: 1fr; grid-template-rows: repeat(5, 1fr); transform: translateY(-50%); border: 1px solid rgba(221,230,220,.9); border-radius: 1.4rem; box-shadow: var(--shadow); }
       .create-button { top: 0; margin-bottom: 0; }
     }
     @media (max-width: 799px) {
       .view-panel, .hit-list-panel { inset: 0 0 calc(4.5rem + env(safe-area-inset-bottom)) 0; width: auto; min-width: 0; border: 0; border-radius: 0; }
       .hit-list-panel { max-height: none; }
-      .hit-list-handle { border-radius: 0; }
+      .bottom-sheet.is-minimized { width: min(25rem, calc(100vw - 2rem)); }
       .hit-list-heading { padding: .75rem .9rem .6rem; }
       .hit-list-item { grid-template-columns: 3.5rem minmax(0, 1fr); gap: .6rem; padding: .65rem .8rem; }
       .list-thumb { width: 3.5rem; height: 3.5rem; }
@@ -287,6 +304,7 @@
       .scale-large { font-size: 17px; }
       body.scale-compact .event-card { grid-template-columns: 5.8rem minmax(0, 1fr); min-height: 9.5rem; }
       body.scale-large .event-card { grid-template-columns: 7.7rem minmax(0, 1fr); }
+      body.scale-compact .event-card.event-card-minimized, body.scale-large .event-card.event-card-minimized { min-height: 3.7rem; max-height: 3.7rem; }
       body.scale-compact .hit-list-item { grid-template-columns: 3rem minmax(0, 1fr); gap: .45rem; }
       body.scale-compact .hit-list-item .list-thumb { width: 3rem; height: 3rem; }
       body.scale-compact .list-item-title { font-size: .76rem; }
@@ -319,7 +337,6 @@
     </header>
 
     <aside id="hitPointList" class="view-panel hit-list-panel" aria-label="Hit Point List">
-      <button id="hitListHandle" class="hit-list-handle" type="button" aria-label="Close Activity list; drag down to close" title="Tap to close or drag down to close"><span aria-hidden="true"></span></button>
       <div class="hit-list-heading">
         <div><h2>Activity</h2><span id="hitListCount" class="hit-list-count">0 points</span></div>
         <button class="view-back" type="button" data-go-home>‹ Home</button>
@@ -331,11 +348,12 @@
       <header class="view-heading"><div><h1>Settings</h1><p>Personalize your map and event feed.</p></div><button class="view-back" type="button" data-go-home>‹ Home</button></header>
       <div class="settings-content">
         <section class="settings-section">
-          <h2>Display</h2>
+          <h2>Display / Filtering</h2>
           <p class="settings-help">Adjust the size of the interface, especially on smaller screens.</p>
           <label class="setting-row" for="uiScale"><span>Mobile UI scale</span><select id="uiScale"><option value="compact">Compact / Small (Mobile Friendly)</option><option value="default">Default</option><option value="large">Large</option></select></label>
           <label class="setting-row" for="datasetToggle"><span>Include Points Without Explicit Date</span><input id="datasetToggle" type="checkbox" role="switch" aria-label="Include points without explicit date"></label>
           <label class="setting-row" for="includeNonHongKong"><span>Include locations outside Hong Kong</span><input id="includeNonHongKong" type="checkbox" role="switch"></label>
+          <label class="setting-row" for="topicFilter"><span>Topic</span><select id="topicFilter"><option value="all">All Topics (0)</option></select></label>
         </section>
         <section class="settings-section">
           <h2>Event categories</h2>
@@ -366,8 +384,8 @@
       </div>
     </section>
 
-    <section class="bottom-sheet" aria-live="polite">
-      <div class="sheet-handle" aria-hidden="true"></div>
+    <section id="bottomSheet" class="bottom-sheet" aria-live="polite">
+      <button id="cardHandle" class="sheet-handle" type="button" aria-controls="eventCard" aria-label="Minimize hit point details" aria-expanded="true" title="Tap or drag to minimize or expand"><span aria-hidden="true"></span></button>
       <div id="eventCard"></div>
     </section>
 
@@ -415,8 +433,10 @@
         categoryKeys.forEach((key) => { categories[key] = parsed.categories && typeof parsed.categories[key] === 'boolean' ? parsed.categories[key] : true; });
         return {
           bookmarks: Array.isArray(parsed.bookmarks) ? parsed.bookmarks.filter((key) => typeof key === 'string') : [],
+          cardMinimized: parsed.cardMinimized === true,
           showWithoutDate: parsed.showWithoutDate === true,
           includeNonHongKong: parsed.includeNonHongKong === true,
+          selectedTopic: typeof parsed.selectedTopic === 'string' ? parsed.selectedTopic : 'all',
           uiScale: ['compact', 'default', 'large'].includes(parsed.uiScale) ? parsed.uiScale : 'default',
           categories,
           profile: {
@@ -426,14 +446,14 @@
           }
         };
       } catch (error) {
-        return { bookmarks: [], showWithoutDate: false, includeNonHongKong: false, uiScale: 'default', categories: Object.fromEntries(categoryKeys.map((key) => [key, true])), profile: { name: '', avatar: '', joinDate: defaultJoinDate } };
+        return { bookmarks: [], cardMinimized: false, showWithoutDate: false, includeNonHongKong: false, selectedTopic: 'all', uiScale: 'default', categories: Object.fromEntries(categoryKeys.map((key) => [key, true])), profile: { name: '', avatar: '', joinDate: defaultJoinDate } };
       }
     }
     const savedPreferences = loadPreferences();
     const state = {
       data: [], filtered: [], category: 'all', search: '', selected: 0, markers: new Map(),
-      bookmarks: new Set(savedPreferences.bookmarks), showWithoutDate: savedPreferences.showWithoutDate,
-      includeNonHongKong: savedPreferences.includeNonHongKong, uiScale: savedPreferences.uiScale,
+      bookmarks: new Set(savedPreferences.bookmarks), cardMinimized: savedPreferences.cardMinimized, showWithoutDate: savedPreferences.showWithoutDate,
+      includeNonHongKong: savedPreferences.includeNonHongKong, selectedTopic: savedPreferences.selectedTopic, uiScale: savedPreferences.uiScale,
       enabledCategories: savedPreferences.categories, profile: savedPreferences.profile,
       loadRequest: 0, activeView: 'Home'
     };
@@ -471,6 +491,12 @@
     };
     const titleOf = (item) => item['llm.place_name'] || item['llm.event_name'] || 'Untitled hit point';
     const summaryOf = (item) => item['llm.summary'] || 'A new point worth discovering.';
+    const topicsOf = (item) => {
+      const topics = Array.isArray(item['llm.topics']) ? item['llm.topics'] : [item['llm.topics']];
+      return topics.flatMap((topic) => typeof topic === 'string' ? topic.split(/[,，;；|、\r\n]+/) : [])
+        .map((topic) => topic.trim())
+        .filter(Boolean);
+    };
     const formatNumber = (value) => new Intl.NumberFormat('en', { notation: 'compact', maximumFractionDigits: 1 }).format(Number(value) || 0);
     const formatDate = (value) => {
       if (!value) return '';
@@ -500,8 +526,10 @@
       try {
         window.localStorage.setItem(storageKey, JSON.stringify({
           bookmarks: Array.from(state.bookmarks),
+          cardMinimized: state.cardMinimized,
           showWithoutDate: state.showWithoutDate,
           includeNonHongKong: state.includeNonHongKong,
+          selectedTopic: state.selectedTopic,
           uiScale: state.uiScale,
           categories: state.enabledCategories,
           profile: state.profile
@@ -592,11 +620,37 @@
       return condPosted && condStart && condEnd && (!search || haystack.includes(search));
     }
 
+    function renderTopicFilter() {
+      const search = state.search.trim().toLowerCase();
+      const now = Date.now();
+      const recencyCutoff = now - 45 * 24 * 60 * 60 * 1000;
+      const matchingItems = state.data.filter((item) => {
+        const matchesCategory = state.category === 'all' || categoryOf(item) === state.category;
+        return state.enabledCategories[categoryOf(item)] && matchesLocationSetting(item) &&
+          matchesSearchAndDates(item, search, now, recencyCutoff) && matchesCategory;
+      });
+      const topicCounts = new Map();
+      matchingItems.forEach((item) => new Set(topicsOf(item)).forEach((topic) => {
+        topicCounts.set(topic, (topicCounts.get(topic) || 0) + 1);
+      }));
+      const topics = Array.from(topicCounts.entries()).sort(([topicA, countA], [topicB, countB]) =>
+        countB - countA || topicA.localeCompare(topicB, 'zh-Hant')
+      );
+      if (state.selectedTopic !== 'all' && !topicCounts.has(state.selectedTopic)) {
+        state.selectedTopic = 'all';
+        savePreferences();
+      }
+      el('topicFilter').innerHTML = `<option value="all">All Topics (${matchingItems.length})</option>${topics.map(([topic, count]) => `<option value="${escapeHtml(topic)}">${escapeHtml(topic)} (${count})</option>`).join('')}`;
+      el('topicFilter').value = state.selectedTopic;
+    }
+
+    const matchesTopic = (item) => state.selectedTopic === 'all' || topicsOf(item).includes(state.selectedTopic);
+
     function renderFilters() {
       const search = state.search.trim().toLowerCase();
       const now = Date.now();
       const recencyCutoff = now - 45 * 24 * 60 * 60 * 1000;
-      const matchingItems = state.data.filter((item) => state.enabledCategories[categoryOf(item)] && matchesLocationSetting(item) && matchesSearchAndDates(item, search, now, recencyCutoff));
+      const matchingItems = state.data.filter((item) => state.enabledCategories[categoryOf(item)] && matchesLocationSetting(item) && matchesTopic(item) && matchesSearchAndDates(item, search, now, recencyCutoff));
       const counts = matchingItems.reduce((acc, item) => { acc[categoryOf(item)] = (acc[categoryOf(item)] || 0) + 1; return acc; }, {});
       const available = Object.entries(categoryMeta).filter(([key]) => key === 'all' || state.enabledCategories[key]);
       el('filters').innerHTML = available.map(([key, meta]) => `<button class="filter-pill ${state.category === key ? 'active' : ''}" data-category="${key}" type="button" style="--category-color:${meta.color}"><span>${meta.icon}</span>${meta.label}<span class="pill-count">${key === 'all' ? matchingItems.length : counts[key] || 0}</span></button>`).join('');
@@ -665,15 +719,30 @@
         savePreferences();
         renderProfile();
       }, { once: true });
-      const fallbackImage = 'https://images.unsplash.com/photo-1517457373958-b7bdd4587205?auto=format&fit=crop&w=160&q=80';
       const savedItems = state.data.filter((item) => state.bookmarks.has(bookmarkKey(item)));
-      el('savedList').innerHTML = savedItems.map((item) => {
+      const now = Date.now();
+      const recencyCutoff = now - 45 * 24 * 60 * 60 * 1000;
+      const savedGroupOf = (item) => {
+        const endDate = timestampOf(item['llm.end_date']);
+        if (endDate !== null) return endDate < now ? 'expired' : 'current';
+        const postedAt = timestampOf(item.posted_at);
+        return postedAt !== null && postedAt < recencyCutoff ? 'expired' : 'no-end-date';
+      };
+      const renderSavedItem = (item, expired) => {
         const meta = categoryMeta[categoryOf(item)] || categoryMeta.other;
         const title = item['llm.event_name'] || item['llm.place_name'] || 'Untitled hit point';
         const place = [item['llm.place_name'], item['llm.district'], item.place_name, item.district].find(hasKnownLocationName) || 'Location unknown';
         const date = formatDateRange(item) || formatDate(item.posted_at) || 'Date unknown';
-        return `<article class="saved-item"><img class="list-thumb" src="${escapeHtml(item.cover_url || fallbackImage)}" alt="" loading="lazy" onerror="this.onerror=null;this.src='${fallbackImage}'"><div class="list-item-body"><h3 class="list-item-title" title="${escapeHtml(title)}">${escapeHtml(title)}</h3><p class="list-item-place">${escapeHtml(place)}</p><span class="list-item-category" style="--category-color:${meta.color}">${meta.icon} ${escapeHtml(meta.label)}</span><p class="list-item-date">${escapeHtml(date)}</p></div><div class="saved-actions">${item.url ? `<a href="${escapeHtml(item.url)}" target="_blank" rel="noopener">IG Post ↗</a>` : ''}${hasKnownLocation(item) ? `<a href="${escapeHtml(item.gmap_url)}" target="_blank" rel="noopener">Navigate ↗</a>` : ''}<button type="button" data-open-saved="${escapeHtml(bookmarkKey(item))}">Open</button><button type="button" class="remove-saved" data-remove-saved="${escapeHtml(bookmarkKey(item))}">Remove</button></div></article>`;
-      }).join('') || '<div class="empty-state">No saved hit points yet. Bookmark an event from Home to keep it here.</div>';
+        const thumbnail = expired ? '' : `<img class="list-thumb" src="${escapeHtml(item.cover_url || 'https://images.unsplash.com/photo-1517457373958-b7bdd4587205?auto=format&fit=crop&w=160&q=80')}" alt="" loading="lazy" onerror="this.onerror=null;this.src='https://images.unsplash.com/photo-1517457373958-b7bdd4587205?auto=format&fit=crop&w=160&q=80'">`;
+        return `<article class="saved-item${expired ? ' expired' : ''}">${thumbnail}<div class="list-item-body"><h3 class="list-item-title" title="${escapeHtml(title)}">${escapeHtml(title)}</h3><p class="list-item-place">${escapeHtml(place)}</p><span class="list-item-category" style="--category-color:${meta.color}">${meta.icon} ${escapeHtml(meta.label)}</span><p class="list-item-date">${escapeHtml(date)}</p>${expired ? '<span class="saved-expired-label">Expired · 過期</span>' : ''}</div><div class="saved-actions">${item.url ? `<a href="${escapeHtml(item.url)}" target="_blank" rel="noopener">IG Post ↗</a>` : ''}${!expired && hasKnownLocation(item) ? `<a href="${escapeHtml(item.gmap_url)}" target="_blank" rel="noopener">Navigate ↗</a>` : ''}<button type="button" data-open-saved="${escapeHtml(bookmarkKey(item))}">Open</button><button type="button" class="remove-saved" data-remove-saved="${escapeHtml(bookmarkKey(item))}">Remove</button></div></article>`;
+      };
+      const currentItems = savedItems.filter((item) => savedGroupOf(item) === 'current');
+      const noEndDateItems = savedItems.filter((item) => savedGroupOf(item) === 'no-end-date');
+      const expiredItems = savedItems.filter((item) => savedGroupOf(item) === 'expired');
+      const renderSavedGroup = (title, items, expired) => `<section class="saved-group"><h3>${title} (${items.length})</h3><div class="saved-group-items">${items.map((item) => renderSavedItem(item, expired)).join('') || '<p class="settings-help">No saved hit points in this section.</p>'}</div></section>`;
+      el('savedList').innerHTML = savedItems.length
+        ? `${renderSavedGroup('Current · 現在', currentItems, false)}${renderSavedGroup('No End Date · 冇 End Date', noEndDateItems, false)}${renderSavedGroup('Expired · 過期', expiredItems, true)}`
+        : '<div class="empty-state">No saved hit points yet. Bookmark an event from Home to keep it here.</div>';
       el('savedList').querySelectorAll('[data-open-saved]').forEach((button) => button.addEventListener('click', () => openSavedItem(button.dataset.openSaved)));
       el('savedList').querySelectorAll('[data-remove-saved]').forEach((button) => button.addEventListener('click', () => {
         state.bookmarks.delete(button.dataset.removeSaved);
@@ -701,6 +770,10 @@
       const item = state.data.find((entry) => bookmarkKey(entry) === key);
       if (!item) {
         showToast('This saved hit point is no longer available');
+        return;
+      }
+      if (!matchesTopic(item)) {
+        showToast(`This point is not included in the selected topic: ${state.selectedTopic}`);
         return;
       }
       state.search = '';
@@ -744,7 +817,20 @@
       });
     }
 
+    function setCardMinimized(minimized) {
+      if (state.cardMinimized === minimized) return;
+      state.cardMinimized = minimized;
+      savePreferences();
+      renderCard();
+    }
+
     function renderCard() {
+      const handle = el('cardHandle');
+      const isExpanded = !state.cardMinimized;
+      el('bottomSheet').classList.toggle('is-minimized', state.cardMinimized);
+      handle.setAttribute('aria-expanded', String(isExpanded));
+      handle.setAttribute('aria-label', `${isExpanded ? 'Minimize' : 'Expand'} hit point details`);
+      handle.title = `Tap or drag to ${isExpanded ? 'minimize' : 'expand'} details`;
       const item = state.filtered[state.selected];
       if (!item) { el('eventCard').innerHTML = '<div class="empty-state">No hit points match that search.</div>'; return; }
       const eventName = item['llm.event_name'] || '';
@@ -752,6 +838,11 @@
       const title = eventName || placeName || 'Untitled hit point';
       const category = categoryOf(item);
       const categoryLabel = categoryMeta[category].label;
+      if (state.cardMinimized) {
+        el('eventCard').innerHTML = `<article class="event-card event-card-minimized" aria-label="Hit point details minimized"><div class="mini-card-content"><span class="mini-card-category" style="--category-color:${categoryMeta[category].color}">${escapeHtml(categoryLabel)}</span><h2 class="mini-card-title" title="${escapeHtml(title)}">${escapeHtml(title)}</h2></div><button id="restoreCardButton" class="card-restore" type="button" aria-label="Expand hit point details">⌃</button></article>`;
+        el('restoreCardButton').addEventListener('click', () => setCardMinimized(false));
+        return;
+      }
       const dateRange = formatDateRange(item);
       const hours = item['llm.opening_hours'] || formatDate(item.posted_at);
       const unknown = '未知';
@@ -796,12 +887,13 @@
     }
 
     function applyFilters() {
+      renderTopicFilter();
       const search = state.search.trim().toLowerCase();
       const now = Date.now();
       const recencyCutoff = now - 45 * 24 * 60 * 60 * 1000;
       state.filtered = state.data.filter((item) => {
         const matchesCategory = state.category === 'all' || categoryOf(item) === state.category;
-        return state.enabledCategories[categoryOf(item)] && matchesLocationSetting(item) && matchesSearchAndDates(item, search, now, recencyCutoff) && matchesCategory;
+        return state.enabledCategories[categoryOf(item)] && matchesLocationSetting(item) && matchesTopic(item) && matchesSearchAndDates(item, search, now, recencyCutoff) && matchesCategory;
       });
       if (state.selected >= state.filtered.length) state.selected = 0;
       renderFilters(); renderMarkers(); renderCard(); renderHitList();
@@ -836,6 +928,12 @@
     });
     el('includeNonHongKong').addEventListener('change', (event) => {
       state.includeNonHongKong = event.target.checked;
+      state.selected = 0;
+      savePreferences();
+      applyFilters();
+    });
+    el('topicFilter').addEventListener('change', (event) => {
+      state.selectedTopic = event.target.value;
       state.selected = 0;
       savePreferences();
       applyFilters();
@@ -890,59 +988,65 @@
     el('filters').addEventListener('scroll', updateFilterScrollButtons, { passive: true });
     window.addEventListener('resize', updateFilterScrollButtons);
     document.querySelectorAll('[data-go-home]').forEach((button) => button.addEventListener('click', () => setActiveView('Home')));
-    const activityHandle = el('hitListHandle');
-    const activityPanel = el('hitPointList');
-    let handleStartY = null;
-    let handleDragDistance = 0;
-    let handleWasDragged = false;
-    let suppressHandleClick = false;
-    let suppressClickTimer = 0;
-    activityHandle.addEventListener('pointerdown', (event) => {
+    const cardHandle = el('cardHandle');
+    const bottomSheet = el('bottomSheet');
+    let cardDragStartY = null;
+    let cardDragPointerId = null;
+    let cardDragDistance = 0;
+    let cardHandleWasDragged = false;
+    let suppressCardHandleClick = false;
+    let suppressCardClickTimer = 0;
+    cardHandle.addEventListener('pointerdown', (event) => {
       if (event.button !== 0) return;
-      window.clearTimeout(suppressClickTimer);
-      suppressHandleClick = false;
-      handleStartY = event.clientY;
-      handleDragDistance = 0;
-      handleWasDragged = false;
-      activityPanel.classList.add('is-dragging');
-      activityHandle.setPointerCapture(event.pointerId);
+      window.clearTimeout(suppressCardClickTimer);
+      suppressCardHandleClick = false;
+      cardDragStartY = event.clientY;
+      cardDragPointerId = event.pointerId;
+      cardDragDistance = 0;
+      cardHandleWasDragged = false;
+      bottomSheet.classList.add('is-card-dragging');
+      cardHandle.setPointerCapture(event.pointerId);
     });
-    activityHandle.addEventListener('pointermove', (event) => {
-      if (handleStartY === null) return;
-      const delta = event.clientY - handleStartY;
-      if (Math.abs(delta) > 6) handleWasDragged = true;
-      handleDragDistance = Math.max(0, delta);
-      activityPanel.style.transform = `translateY(${handleDragDistance}px)`;
+    window.addEventListener('pointermove', (event) => {
+      if (cardDragStartY === null || event.pointerId !== cardDragPointerId) return;
+      const delta = event.clientY - cardDragStartY;
+      if (Math.abs(delta) > 6) cardHandleWasDragged = true;
+      cardDragDistance = delta;
+      bottomSheet.style.setProperty('--card-drag-y', `${delta}px`);
       event.preventDefault();
     });
-    activityHandle.addEventListener('pointerup', () => {
-      if (handleStartY === null) return;
-      const closeThreshold = Math.max(72, Math.min(140, activityPanel.offsetHeight * .18));
-      const closePanel = handleDragDistance >= closeThreshold;
-      handleStartY = null;
-      activityPanel.classList.remove('is-dragging');
-      activityPanel.style.transform = '';
-      if (handleWasDragged) {
-        suppressHandleClick = true;
-        suppressClickTimer = window.setTimeout(() => { suppressHandleClick = false; }, 350);
+    window.addEventListener('pointerup', (event) => {
+      if (cardDragStartY === null || event.pointerId !== cardDragPointerId) return;
+      const threshold = Math.max(48, Math.min(110, bottomSheet.offsetHeight * .18));
+      let nextMinimized = state.cardMinimized;
+      if (!state.cardMinimized && cardDragDistance >= threshold) nextMinimized = true;
+      else if (state.cardMinimized && cardDragDistance <= -threshold) nextMinimized = false;
+      cardDragStartY = null;
+      cardDragPointerId = null;
+      bottomSheet.classList.remove('is-card-dragging');
+      bottomSheet.style.setProperty('--card-drag-y', '0px');
+      if (cardHandleWasDragged) {
+        suppressCardHandleClick = true;
+        suppressCardClickTimer = window.setTimeout(() => { suppressCardHandleClick = false; }, 350);
       }
-      if (closePanel) setActiveView('Home');
+      setCardMinimized(nextMinimized);
     });
-    activityHandle.addEventListener('pointercancel', () => {
-      if (handleStartY === null) return;
-      handleStartY = null;
-      activityPanel.classList.remove('is-dragging');
-      activityPanel.style.transform = '';
-      suppressHandleClick = false;
+    window.addEventListener('pointercancel', (event) => {
+      if (cardDragStartY === null || event.pointerId !== cardDragPointerId) return;
+      cardDragStartY = null;
+      cardDragPointerId = null;
+      bottomSheet.classList.remove('is-card-dragging');
+      bottomSheet.style.setProperty('--card-drag-y', '0px');
+      suppressCardHandleClick = false;
     });
-    activityHandle.addEventListener('click', (event) => {
-      if (suppressHandleClick) {
+    cardHandle.addEventListener('click', (event) => {
+      if (suppressCardHandleClick) {
         event.preventDefault();
-        suppressHandleClick = false;
-        window.clearTimeout(suppressClickTimer);
+        suppressCardHandleClick = false;
+        window.clearTimeout(suppressCardClickTimer);
         return;
       }
-      setActiveView('Home');
+      setCardMinimized(!state.cardMinimized);
     });
     document.querySelectorAll('.nav-item').forEach((button) => button.addEventListener('click', () => {
       const view = button.dataset.nav;
@@ -951,7 +1055,6 @@
         return;
       }
       setActiveView(view);
-      if (view === 'Home') showToast('Home');
     }));
     el('datasetToggle').checked = state.showWithoutDate;
     el('includeNonHongKong').checked = state.includeNonHongKong;
