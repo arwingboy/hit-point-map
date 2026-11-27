@@ -67,7 +67,10 @@
     .clear-button { width: 1.8rem; height: 1.8rem; border-radius: 50%; font-size: 1rem; }
     .clear-button:hover { background: #edf2eb; color: var(--ink); }
 
-    .filters { display: flex; gap: .5rem; padding: .7rem .25rem 0; overflow-x: auto; scroll-behavior: smooth; scrollbar-width: none; }
+    .filter-strip { display: flex; align-items: center; gap: .25rem; min-width: 0; }
+    .filter-scroll { display: grid; flex: 0 0 1.8rem; width: 1.8rem; height: 1.8rem; place-items: center; border: 1px solid rgba(255,255,255,.82); border-radius: 50%; color: var(--green); background: rgba(255,255,255,.82); cursor: pointer; transition: opacity .18s ease, visibility .18s ease; }
+    .filter-scroll:disabled { visibility: hidden; opacity: 0; cursor: default; }
+    .filters { display: flex; flex: 1; min-width: 0; gap: .5rem; padding: .7rem .25rem 0; overflow-x: auto; scroll-behavior: smooth; scrollbar-width: none; }
     .filters::-webkit-scrollbar { display: none; }
     .dataset-toggle {
       display: flex;
@@ -175,15 +178,19 @@
     .navigate-button:hover { background: #225e44; }
     .empty-state { padding: 1.4rem; text-align: center; color: var(--muted); background: var(--card); border-radius: 1.2rem; box-shadow: var(--shadow); }
 
-    .list-toggle { display: inline-flex; align-items: center; justify-content: center; gap: .45rem; width: 100%; margin-top: .65rem; padding: .65rem .8rem; border: 1px solid rgba(255,255,255,.82); border-radius: .8rem; color: var(--ink); background: var(--card); box-shadow: 0 5px 16px rgba(31,47,39,.08); cursor: pointer; font: 700 .76rem 'DM Sans', sans-serif; }
-    .hit-list-panel { position: fixed; z-index: 7; top: 1rem; bottom: 1rem; left: 7rem; display: flex; flex-direction: column; width: min(23rem, 34vw); min-width: 18rem; overflow: hidden; border: 1px solid rgba(255,255,255,.85); border-radius: 1.2rem; background: rgba(255,255,255,.94); box-shadow: var(--shadow); backdrop-filter: blur(18px); pointer-events: auto; }
-    .hit-list-panel.collapsed { display: none; }
+    .view-panel { position: fixed; z-index: 4; inset: 1rem 1rem 1rem 7rem; display: none; flex-direction: column; min-width: 0; overflow: hidden; border: 1px solid rgba(255,255,255,.85); border-radius: 1.2rem; background: rgba(255,255,255,.96); box-shadow: var(--shadow); backdrop-filter: blur(18px); pointer-events: auto; }
+    .view-panel.active { display: flex; }
+    .view-heading { display: flex; align-items: center; justify-content: space-between; gap: .8rem; padding: 1.1rem 1.2rem; border-bottom: 1px solid var(--line); }
+    .view-heading h1 { margin: 0; font: 700 1.3rem 'Space Grotesk', sans-serif; }
+    .view-heading p { margin: .25rem 0 0; color: var(--muted); font-size: .78rem; }
+    .view-back { flex: 0 0 auto; padding: .55rem .8rem; border: 1px solid var(--line); border-radius: .7rem; color: var(--green); background: #fff; cursor: pointer; font: 700 .75rem 'DM Sans', sans-serif; }
+    .hit-list-panel { inset: 1rem 1rem 1rem 7rem; }
     .hit-list-heading { display: flex; align-items: center; justify-content: space-between; gap: .6rem; padding: 1rem 1rem .75rem; border-bottom: 1px solid var(--line); }
     .hit-list-heading h2 { margin: 0; font: 700 1rem 'Space Grotesk', sans-serif; }
     .hit-list-count { color: var(--muted); font-size: .73rem; }
     .list-close { display: grid; place-items: center; width: 2rem; height: 2rem; border: 0; border-radius: 50%; color: var(--muted); background: transparent; cursor: pointer; font-size: 1.2rem; }
     .list-close:hover { background: #edf2eb; color: var(--ink); }
-    .hit-list-items { min-height: 0; overflow-y: auto; overscroll-behavior: contain; }
+    .hit-list-items { flex: 1; min-height: 0; overflow-y: auto; overscroll-behavior: contain; }
     .hit-list-item { display: grid; grid-template-columns: 4.25rem minmax(0, 1fr); gap: .7rem; padding: .8rem; border-bottom: 1px solid var(--line); cursor: pointer; transition: background .16s ease; }
     .hit-list-item:hover, .hit-list-item.selected { background: #f0f6ed; }
     .hit-list-item.selected { box-shadow: inset 3px 0 var(--green); }
@@ -196,6 +203,36 @@
     .list-item-actions a { color: var(--green); text-decoration: none; }
     .list-item-actions a:hover { text-decoration: underline; }
     .list-item-actions .disabled-action { color: #a0aaa4; }
+    .settings-content, .profile-content { min-height: 0; padding: 1rem 1.2rem 1.5rem; overflow-y: auto; }
+    .settings-section { margin: 0 0 1.3rem; padding: 1rem; border: 1px solid var(--line); border-radius: 1rem; background: rgba(255,255,255,.78); }
+    .settings-section h2 { margin: 0 0 .35rem; font: 700 1rem 'Space Grotesk', sans-serif; }
+    .settings-help { margin: 0 0 .8rem; color: var(--muted); font-size: .78rem; line-height: 1.45; }
+    .setting-row { display: flex; align-items: center; justify-content: space-between; gap: 1rem; min-height: 3rem; border-top: 1px solid #edf0eb; color: var(--ink); font-size: .86rem; }
+    .setting-row:first-of-type { border-top: 0; }
+    .setting-row input[type="checkbox"] { width: 1.15rem; height: 1.15rem; accent-color: var(--green); }
+    .setting-row select, .profile-input { min-width: 9rem; padding: .6rem .7rem; border: 1px solid var(--line); border-radius: .65rem; color: var(--ink); background: #fff; font: inherit; }
+    .category-settings { display: grid; grid-template-columns: repeat(auto-fit, minmax(9rem, 1fr)); gap: .25rem 1rem; }
+    .category-settings .setting-row { font-size: .8rem; }
+    .profile-card { display: flex; align-items: center; gap: 1rem; margin-bottom: 1rem; padding: 1.1rem; border: 1px solid var(--line); border-radius: 1rem; background: #fff; }
+    .profile-avatar { display: grid; flex: 0 0 4.5rem; width: 4.5rem; height: 4.5rem; place-items: center; overflow: hidden; border-radius: 50%; color: #fff; background: var(--green); font: 700 1.6rem 'Space Grotesk', sans-serif; }
+    .profile-avatar img { width: 100%; height: 100%; object-fit: cover; }
+    .profile-fields { display: grid; gap: .8rem; max-width: 34rem; }
+    .profile-field { display: grid; gap: .35rem; color: var(--muted); font-size: .78rem; font-weight: 700; }
+    .profile-field .profile-input { width: 100%; color: var(--ink); font-weight: 400; }
+    .upload-label { display: inline-flex; align-items: center; width: fit-content; padding: .55rem .75rem; border: 1px solid var(--line); border-radius: .65rem; color: var(--green); background: #fff; cursor: pointer; font-size: .78rem; font-weight: 700; }
+    .upload-label input { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); }
+    .saved-list { display: grid; gap: .65rem; }
+    .saved-item { display: grid; grid-template-columns: 4rem minmax(0, 1fr) auto; align-items: center; gap: .75rem; padding: .7rem; border: 1px solid var(--line); border-radius: .85rem; background: #fff; }
+    .saved-item .list-thumb { width: 4rem; height: 4rem; }
+    .saved-actions { display: flex; flex-wrap: wrap; justify-content: flex-end; gap: .4rem; }
+    .saved-actions button, .saved-actions a { padding: .45rem .55rem; border: 1px solid var(--line); border-radius: .55rem; color: var(--green); background: #fff; text-decoration: none; cursor: pointer; font: 700 .68rem 'DM Sans', sans-serif; white-space: nowrap; }
+    .saved-actions .remove-saved { color: #b34552; }
+    .scale-compact { --ui-scale: .88; }
+    .scale-default { --ui-scale: 1; }
+    .scale-large { --ui-scale: 1.12; }
+    body[class*="scale-"] .event-body { padding: calc(clamp(.8rem, 2.5vw, 1rem) * var(--ui-scale)); }
+    body[class*="scale-"] .event-title { font-size: calc(1.13rem * var(--ui-scale)); }
+    body[class*="scale-"] .hit-list-item { padding: calc(.8rem * var(--ui-scale)); }
 
     .bottom-nav {
       position: fixed;
@@ -220,6 +257,7 @@
 
     .toast { position: fixed; z-index: 10; top: 5.8rem; left: 50%; padding: .65rem .85rem; border-radius: .7rem; color: #fff; background: rgba(23,35,31,.9); font-size: .75rem; transform: translate(-50%, -1rem); opacity: 0; pointer-events: none; transition: .2s ease; }
     .toast.show { transform: translate(-50%, 0); opacity: 1; }
+    body:not([data-view="home"]) .top-controls, body:not([data-view="home"]) .bottom-sheet { display: none; }
     @keyframes card-in { from { opacity: 0; transform: translateY(.6rem); } to { opacity: 1; transform: translateY(0); } }
     @media (min-width: 800px) {
       .brand-mark { display: flex; }
@@ -230,11 +268,28 @@
       .create-button { top: 0; margin-bottom: 0; }
     }
     @media (max-width: 799px) {
-      .hit-list-panel { top: auto; right: .6rem; bottom: 5rem; left: .6rem; width: auto; min-width: 0; max-height: min(56vh, 30rem); transform: translateY(calc(100% + 1rem)); opacity: 0; visibility: hidden; transition: transform .24s ease, opacity .2s ease, visibility .24s; }
-      .hit-list-panel.open { transform: translateY(0); opacity: 1; visibility: visible; }
+      .view-panel, .hit-list-panel { inset: 0 0 calc(4.5rem + env(safe-area-inset-bottom)) 0; width: auto; min-width: 0; border: 0; border-radius: 0; }
+      .hit-list-panel { max-height: none; }
       .hit-list-heading { padding: .75rem .9rem .6rem; }
       .hit-list-item { grid-template-columns: 3.5rem minmax(0, 1fr); gap: .6rem; padding: .65rem .8rem; }
       .list-thumb { width: 3.5rem; height: 3.5rem; }
+      body[data-view="home"] .top-controls, body[data-view="home"] .bottom-sheet { display: block; }
+      .app-shell { min-height: 100dvh; }
+      .bottom-nav { min-height: calc(4.5rem + env(safe-area-inset-bottom)); }
+      .scale-compact { font-size: 14px; }
+      .scale-large { font-size: 17px; }
+      body.scale-compact .event-card { grid-template-columns: 5.8rem minmax(0, 1fr); min-height: 9.5rem; }
+      body.scale-large .event-card { grid-template-columns: 7.7rem minmax(0, 1fr); }
+      body.scale-compact .hit-list-item { grid-template-columns: 3rem minmax(0, 1fr); gap: .45rem; }
+      body.scale-compact .hit-list-item .list-thumb { width: 3rem; height: 3rem; }
+      body.scale-compact .list-item-title { font-size: .76rem; }
+      body.scale-large .hit-list-item { grid-template-columns: 4rem minmax(0, 1fr); gap: .75rem; }
+      body.scale-large .hit-list-item .list-thumb { width: 4rem; height: 4rem; }
+      body.scale-large .list-item-title { font-size: .92rem; }
+      .filter-scroll { flex-basis: 1.6rem; width: 1.6rem; height: 1.6rem; }
+      .saved-item { grid-template-columns: 3.5rem minmax(0, 1fr); }
+      .saved-item .list-thumb { width: 3.5rem; height: 3.5rem; }
+      .saved-actions { grid-column: 2; justify-content: flex-start; }
     }
     @media (prefers-reduced-motion: reduce) { *, *::before, *::after { animation-duration: .01ms !important; transition-duration: .01ms !important; } }
   </style>
@@ -249,25 +304,59 @@
         <input id="searchInput" class="search-input" type="search" placeholder="Search a place, mood, or friend..." autocomplete="off">
         <button id="clearSearch" class="clear-button" type="button" aria-label="Clear search">×</button>
       </div>
-      <div id="filters" class="filters" aria-label="Event categories"></div>
-      <div class="dataset-toggle">
-        <span id="datasetLabel">Showing events with explicit dates</span>
-        <label class="dataset-toggle-control">
-          <span>Include Points Without Explicit Date</span>
-          <input id="datasetToggle" type="checkbox" role="switch" aria-label="Include events without dates">
-          <span class="dataset-switch" aria-hidden="true"></span>
-        </label>
+      <div class="filter-strip">
+        <button id="filterScrollLeft" class="filter-scroll" type="button" aria-label="Scroll categories left" disabled>&lt;</button>
+        <div id="filters" class="filters" aria-label="Event categories"></div>
+        <button id="filterScrollRight" class="filter-scroll" type="button" aria-label="Scroll categories right" disabled>&gt;</button>
       </div>
-      <button id="listToggle" class="list-toggle" type="button" aria-expanded="false" aria-controls="hitPointList">☷ Hit Point List <span id="listToggleCount">(0)</span></button>
     </header>
 
-    <aside id="hitPointList" class="hit-list-panel" aria-label="Hit Point List">
+    <aside id="hitPointList" class="view-panel hit-list-panel" aria-label="Hit Point List">
       <div class="hit-list-heading">
-        <div><h2>Hit Point List</h2><span id="hitListCount" class="hit-list-count">0 points</span></div>
-        <button id="listClose" class="list-close" type="button" aria-label="Close list">×</button>
+        <div><h2>Activity</h2><span id="hitListCount" class="hit-list-count">0 points</span></div>
+        <button class="view-back" type="button" data-go-home>‹ Home</button>
       </div>
       <div id="hitListItems" class="hit-list-items"></div>
     </aside>
+
+    <section id="settingsView" class="view-panel" aria-label="Settings">
+      <header class="view-heading"><div><h1>Settings</h1><p>Personalize your map and event feed.</p></div><button class="view-back" type="button" data-go-home>‹ Home</button></header>
+      <div class="settings-content">
+        <section class="settings-section">
+          <h2>Display</h2>
+          <p class="settings-help">Adjust the size of the interface, especially on smaller screens.</p>
+          <label class="setting-row" for="uiScale"><span>Mobile UI scale</span><select id="uiScale"><option value="compact">Compact / Small (Mobile Friendly)</option><option value="default">Default</option><option value="large">Large</option></select></label>
+          <label class="setting-row" for="datasetToggle"><span>Include Points Without Explicit Date</span><input id="datasetToggle" type="checkbox" role="switch" aria-label="Include points without explicit date"></label>
+          <label class="setting-row" for="includeNonHongKong"><span>Include locations outside Hong Kong</span><input id="includeNonHongKong" type="checkbox" role="switch"></label>
+        </section>
+        <section class="settings-section">
+          <h2>Event categories</h2>
+          <p class="settings-help">Disabled categories are excluded from Home, Activity, and saved results.</p>
+          <div id="categorySettings" class="category-settings"></div>
+        </section>
+      </div>
+    </section>
+
+    <section id="youView" class="view-panel" aria-label="Your profile and saved hit points">
+      <header class="view-heading"><div><h1>You</h1><p>Your profile and saved hit points.</p></div><button class="view-back" type="button" data-go-home>‹ Home</button></header>
+      <div class="profile-content">
+        <div class="profile-card"><div id="profileAvatar" class="profile-avatar" aria-label="Profile avatar"></div><div><strong id="profileNamePreview">Your name</strong><p id="joinDatePreview" class="settings-help"></p></div></div>
+        <div class="settings-section">
+          <h2>Profile</h2>
+          <div class="profile-fields">
+            <label class="profile-field">Name<input id="profileName" class="profile-input" type="text" maxlength="80" autocomplete="name" placeholder="Your name"></label>
+            <label class="profile-field">Avatar image URL<input id="avatarUrl" class="profile-input" type="url" placeholder="https://example.com/avatar.jpg"></label>
+            <label class="upload-label">Or upload an image<input id="avatarFile" type="file" accept="image/*"></label>
+            <label class="profile-field">Join date<input id="joinDate" class="profile-input" type="date"></label>
+          </div>
+        </div>
+        <section class="settings-section">
+          <h2>Saved hit points</h2>
+          <p class="settings-help">Select a saved point to open it on Home.</p>
+          <div id="savedList" class="saved-list"></div>
+        </section>
+      </div>
+    </section>
 
     <section class="bottom-sheet" aria-live="polite">
       <div class="sheet-handle" aria-hidden="true"></div>
@@ -275,7 +364,7 @@
     </section>
 
     <nav class="bottom-nav" aria-label="Main navigation">
-      <button class="nav-item active" type="button" data-nav="Discover"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M3 11.5 12 4l9 7.5"></path><path d="M5.5 10v9h13v-9M9 19v-5h6v5"></path></svg><span>Discover</span></button>
+      <button class="nav-item active" type="button" data-nav="Home"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M3 11.5 12 4l9 7.5"></path><path d="M5.5 10v9h13v-9M9 19v-5h6v5"></path></svg><span>Home</span></button>
       <button class="nav-item" type="button" data-nav="Activity"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M4 13h3l2-7 4 12 2-5h5"></path></svg><span>Activity</span></button>
       <button class="nav-item create-button" type="button" data-nav="Create" aria-label="Create"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 5v14M5 12h14"></path></svg></button>
       <button class="nav-item" type="button" data-nav="Settings"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M12 15.2a3.2 3.2 0 1 0 0-6.4 3.2 3.2 0 0 0 0 6.4Z"></path><path d="m19.4 15 .1.1a2 2 0 0 1-2.8 2.8l-.1-.1a2 2 0 0 0-3.4 1.4v.2a2 2 0 0 1-4 0v-.2a2 2 0 0 0-3.4-1.4l-.1.1A2 2 0 0 1 3 15.1l.1-.1a2 2 0 0 0-1.4-3.4h-.2a2 2 0 0 1 0-4h.2a2 2 0 0 0 1.4-3.4L3 4.1A2 2 0 0 1 5.8 1.3l.1.1a2 2 0 0 0 3.4-1.4V0h4v.1a2 2 0 0 0 3.4 1.4l.1-.1a2 2 0 0 1 2.8 2.8l-.1.1a2 2 0 0 0 1.4 3.4h.2a2 2 0 0 1 0 4h-.2a2 2 0 0 0-1.4 3.3Z" transform="scale(.7) translate(5 5)"></path></svg><span>Settings</span></button>
@@ -306,7 +395,40 @@
       workshop: { label: 'Workshop', icon: '⚒', color: '#7456c8' },
       other: { label: 'Other', icon: '✧', color: '#66736d' }
     };
-    const state = { data: [], filtered: [], category: 'all', search: '', selected: 0, markers: new Map(), bookmarks: new Set(), showWithoutDate: false, loadRequest: 0 };
+    const categoryKeys = Object.keys(categoryMeta).filter((key) => key !== 'all');
+    const storageKey = 'hitPointMap.preferences.v1';
+    const today = new Date();
+    const defaultJoinDate = `${today.getFullYear()}-${String(today.getMonth() + 1).padStart(2, '0')}-${String(today.getDate()).padStart(2, '0')}`;
+    function loadPreferences() {
+      try {
+        const raw = window.localStorage.getItem(storageKey);
+        const parsed = raw ? JSON.parse(raw) : {};
+        const categories = {};
+        categoryKeys.forEach((key) => { categories[key] = parsed.categories && typeof parsed.categories[key] === 'boolean' ? parsed.categories[key] : true; });
+        return {
+          bookmarks: Array.isArray(parsed.bookmarks) ? parsed.bookmarks.filter((key) => typeof key === 'string') : [],
+          showWithoutDate: parsed.showWithoutDate === true,
+          includeNonHongKong: parsed.includeNonHongKong === true,
+          uiScale: ['compact', 'default', 'large'].includes(parsed.uiScale) ? parsed.uiScale : 'default',
+          categories,
+          profile: {
+            name: typeof parsed.profile?.name === 'string' ? parsed.profile.name : '',
+            avatar: typeof parsed.profile?.avatar === 'string' ? parsed.profile.avatar : '',
+            joinDate: typeof parsed.profile?.joinDate === 'string' && /^\d{4}-\d{2}-\d{2}$/.test(parsed.profile.joinDate) ? parsed.profile.joinDate : defaultJoinDate
+          }
+        };
+      } catch (error) {
+        return { bookmarks: [], showWithoutDate: false, includeNonHongKong: false, uiScale: 'default', categories: Object.fromEntries(categoryKeys.map((key) => [key, true])), profile: { name: '', avatar: '', joinDate: defaultJoinDate } };
+      }
+    }
+    const savedPreferences = loadPreferences();
+    const state = {
+      data: [], filtered: [], category: 'all', search: '', selected: 0, markers: new Map(),
+      bookmarks: new Set(savedPreferences.bookmarks), showWithoutDate: savedPreferences.showWithoutDate,
+      includeNonHongKong: savedPreferences.includeNonHongKong, uiScale: savedPreferences.uiScale,
+      enabledCategories: savedPreferences.categories, profile: savedPreferences.profile,
+      loadRequest: 0, activeView: 'Home'
+    };
     mapboxgl.accessToken = 'pk.eyJ1IjoiYXJ3aW5nYm95IiwiYSI6ImNtdnI4NDZmcTA1MWMyenB6Y291Y3RiN2QifQ.n1nobP2xHysAYss5qu9wMA';
     const map = new mapboxgl.Map({
       container: 'map',
@@ -366,6 +488,37 @@
     const bookmarkKey = (item) => item.url || `${titleOf(item)}-${item.posted_at || ''}`;
     const statusOf = (item) => item['llm.sentiment'] ? String(item['llm.sentiment']) : item['llm.opening_hours'] ? 'live' : 'hot now';
     const showToast = (message) => { const toast = el('toast'); toast.textContent = message; toast.classList.add('show'); window.clearTimeout(showToast.timer); showToast.timer = window.setTimeout(() => toast.classList.remove('show'), 1800); };
+    function savePreferences() {
+      try {
+        window.localStorage.setItem(storageKey, JSON.stringify({
+          bookmarks: Array.from(state.bookmarks),
+          showWithoutDate: state.showWithoutDate,
+          includeNonHongKong: state.includeNonHongKong,
+          uiScale: state.uiScale,
+          categories: state.enabledCategories,
+          profile: state.profile
+        }));
+      } catch (error) {
+        showToast('Changes could not be saved in this browser');
+      }
+    }
+
+    function isHongKongLocation(item) {
+      const latitude = coordinateValue(item, ['rawLatitude', 'lat', 'latitude', 'place_lat', 'place_latitude', 'llm.lat', 'llm.latitude', 'coordinates.lat', 'location.lat']);
+      const longitude = coordinateValue(item, ['rawLongitude', 'lng', 'lon', 'longitude', 'place_lng', 'place_longitude', 'llm.lng', 'llm.longitude', 'coordinates.lng', 'coordinates.lon', 'location.lng']);
+      const locationText = [item['llm.place_name'], item.place_name, item['llm.district'], item.district, item.location].filter(Boolean).join(' ').toLowerCase();
+      const hongKongTerms = /hong\\s*kong|\\bhk\\b|香港|九龍|九龙|新界|中環|中环|灣仔|湾仔|旺角|銅鑼灣|铜锣湾|尖沙咀|深水埗|沙田|大埔|荃灣|荃湾|屯門|屯门|元朗|觀塘|观塘|油尖旺|北區|北区|南區|南区|東區|东区|西貢|西贡|離島|离岛|葵青|黃大仙|黄大仙|赤柱|跑馬地|跑马地|啟德|启德|香港島|香港岛|九龙城|九龍城|西九文化區|西九龍|赤鱲角|荔枝角|紅磡|大圍|馬鞍山|九龍灣|薄扶林|上水|上環|將軍澳|山頂|新蒲崗|北角|大角咀|九龍塘|天水圍|錦田|西營盤|葵芳|鰂魚涌|大嶼山|油麻地|黃竹坑|葵涌|牛頭角|長沙灣|石硤尾|柴灣|青衣|東涌|香港仔|太子|何文田|西沙|馬灣|黃埔|南丫島|長洲|維多利亞港|石澳|大坑|大澳|佐敦|美孚|淺水灣|沙頭角|調景嶺|牛池灣|數碼港|太古城|堅尼地城|西灣河|炮台山|南昌|大尾篤|吉澳|蓮麻坑|紅花嶺|石籬|油塘|寶琳|葵興|黃泥涌|東平洲|杏花邨|維港|大潭|鑽石山|秀茂坪|大江埔村|安達臣道|慈雲山|半山|顯徑|樂富|尖東|鯉魚門|天后|火炭|西半山|石塘咀|central|wan chai|kowloon|tsim sha tsui|causeway bay|sham shui po|sha tin|tai po|tsuen wan|tuen mun|yuen long|kwun tong|sai kung|islands district|wong tai sin|yau tsim mong|sheung wan|tai koo|tseung kwan o|discovery bay|lantau|stanley|repulse bay|pok fu lam|kennedy town|north point|quarry bay|shek o|clear water bay|new territories/;
+      const knownNonHongKongTerms = /taiwan|taipei|台灣|台湾|台北|臺北|北投|坪林|altrincham|manchester|london|倫敦|伦敦|solihull|kingston|singapore|tokyo|東京|osaka|shanghai|上海|beijing|北京|guangzhou|廣州|广州|shenzhen|深圳|macau|澳門|澳门|首爾|首尔|桃園|桃园|新竹|佛山|calgary|吉隆坡|venice|胡志明市|海口|江門|江门|wuhan|武漢|武汉|brisbane|vancouver|中山|高雄|adelaide|新北|台南|成都|japan|korea/;
+      if (knownNonHongKongTerms.test(locationText)) return false;
+      if (hongKongTerms.test(locationText)) return true;
+      if (latitude !== null && longitude !== null) return latitude >= 22.14 && latitude <= 22.58 && longitude >= 113.8 && longitude <= 114.46;
+      const district = String(item['llm.district'] || item.district || '').trim();
+      return hasKnownLocationName(district) ? false : null;
+    }
+
+    function matchesLocationSetting(item) {
+      return state.includeNonHongKong || isHongKongLocation(item) !== false;
+    }
 
     function coordinateValue(item, keys) {
       for (const key of keys) {
@@ -417,7 +570,7 @@
       const coverPath = String(item.cover_path || '').replace(/\\/g, '/');
       const coverFileName = coverPath.split('/').pop();
       const localCoverUrl = coverFileName ? `covers/${encodeURIComponent(coverFileName)}` : '';
-      return { ...item, category: categoryOf(item), lat, lng, cover_url: localCoverUrl || item.cover_url || '', gmap_url: googleMapsUrl(item) };
+      return { ...item, rawLatitude: latitude, rawLongitude: longitude, category: categoryOf(item), lat, lng, cover_url: localCoverUrl || item.cover_url || '', gmap_url: googleMapsUrl(item) };
     }
 
     function matchesSearchAndDates(item, search, now, recencyCutoff) {
@@ -435,10 +588,33 @@
       const search = state.search.trim().toLowerCase();
       const now = Date.now();
       const recencyCutoff = now - 45 * 24 * 60 * 60 * 1000;
-      const matchingItems = state.data.filter((item) => matchesSearchAndDates(item, search, now, recencyCutoff));
+      const matchingItems = state.data.filter((item) => state.enabledCategories[categoryOf(item)] && matchesLocationSetting(item) && matchesSearchAndDates(item, search, now, recencyCutoff));
       const counts = matchingItems.reduce((acc, item) => { acc[categoryOf(item)] = (acc[categoryOf(item)] || 0) + 1; return acc; }, {});
-      el('filters').innerHTML = Object.entries(categoryMeta).map(([key, meta]) => `<button class="filter-pill ${state.category === key ? 'active' : ''}" data-category="${key}" type="button" style="--category-color:${meta.color}"><span>${meta.icon}</span>${meta.label}<span class="pill-count">${key === 'all' ? matchingItems.length : counts[key] || 0}</span></button>`).join('');
+      const available = Object.entries(categoryMeta).filter(([key]) => key === 'all' || state.enabledCategories[key]);
+      el('filters').innerHTML = available.map(([key, meta]) => `<button class="filter-pill ${state.category === key ? 'active' : ''}" data-category="${key}" type="button" style="--category-color:${meta.color}"><span>${meta.icon}</span>${meta.label}<span class="pill-count">${key === 'all' ? matchingItems.length : counts[key] || 0}</span></button>`).join('');
       el('filters').querySelectorAll('[data-category]').forEach((button) => button.addEventListener('click', () => { state.category = button.dataset.category; state.selected = 0; applyFilters(); }));
+      updateFilterScrollButtons();
+    }
+
+    function updateFilterScrollButtons() {
+      const filters = el('filters');
+      const canScroll = filters.scrollWidth > filters.clientWidth + 2;
+      el('filterScrollLeft').disabled = !canScroll || filters.scrollLeft <= 1;
+      el('filterScrollRight').disabled = !canScroll || filters.scrollLeft + filters.clientWidth >= filters.scrollWidth - 1;
+    }
+
+    function renderCategorySettings() {
+      el('categorySettings').innerHTML = categoryKeys.map((key) => {
+        const meta = categoryMeta[key];
+        return `<label class="setting-row" for="category-${key}"><span>${meta.icon} ${escapeHtml(meta.label)}</span><input id="category-${key}" type="checkbox" data-enabled-category="${key}" ${state.enabledCategories[key] ? 'checked' : ''}></label>`;
+      }).join('');
+      el('categorySettings').querySelectorAll('[data-enabled-category]').forEach((input) => input.addEventListener('change', () => {
+        state.enabledCategories[input.dataset.enabledCategory] = input.checked;
+        if (state.category !== 'all' && !state.enabledCategories[state.category]) state.category = 'all';
+        state.selected = 0;
+        savePreferences();
+        applyFilters();
+      }));
     }
 
     function markerIcon(item, active = false) {
@@ -467,10 +643,73 @@
       });
     }
 
+    function renderProfile() {
+      const name = state.profile.name.trim() || 'Your name';
+      el('profileNamePreview').textContent = name;
+      el('profileName').value = state.profile.name;
+      el('avatarUrl').value = state.profile.avatar.startsWith('data:') ? '' : state.profile.avatar;
+      el('joinDate').value = state.profile.joinDate;
+      el('joinDatePreview').textContent = `Member since ${formatDate(state.profile.joinDate) || state.profile.joinDate}`;
+      const avatar = el('profileAvatar');
+      avatar.innerHTML = state.profile.avatar ? `<img src="${escapeHtml(state.profile.avatar)}" alt="">` : escapeHtml((name.trim()[0] || 'Y').toUpperCase());
+      avatar.querySelector('img')?.addEventListener('error', () => {
+        state.profile.avatar = '';
+        savePreferences();
+        renderProfile();
+      }, { once: true });
+      const fallbackImage = 'https://images.unsplash.com/photo-1517457373958-b7bdd4587205?auto=format&fit=crop&w=160&q=80';
+      const savedItems = state.data.filter((item) => state.bookmarks.has(bookmarkKey(item)));
+      el('savedList').innerHTML = savedItems.map((item) => {
+        const meta = categoryMeta[categoryOf(item)] || categoryMeta.other;
+        const title = item['llm.event_name'] || item['llm.place_name'] || 'Untitled hit point';
+        const place = [item['llm.place_name'], item['llm.district'], item.place_name, item.district].find(hasKnownLocationName) || 'Location unknown';
+        const date = formatDateRange(item) || formatDate(item.posted_at) || 'Date unknown';
+        return `<article class="saved-item"><img class="list-thumb" src="${escapeHtml(item.cover_url || fallbackImage)}" alt="" loading="lazy" onerror="this.onerror=null;this.src='${fallbackImage}'"><div class="list-item-body"><h3 class="list-item-title" title="${escapeHtml(title)}">${escapeHtml(title)}</h3><p class="list-item-place">${escapeHtml(place)}</p><span class="list-item-category" style="--category-color:${meta.color}">${meta.icon} ${escapeHtml(meta.label)}</span><p class="list-item-date">${escapeHtml(date)}</p></div><div class="saved-actions">${item.url ? `<a href="${escapeHtml(item.url)}" target="_blank" rel="noopener">IG Post ↗</a>` : ''}${hasKnownLocation(item) ? `<a href="${escapeHtml(item.gmap_url)}" target="_blank" rel="noopener">Navigate ↗</a>` : ''}<button type="button" data-open-saved="${escapeHtml(bookmarkKey(item))}">Open</button><button type="button" class="remove-saved" data-remove-saved="${escapeHtml(bookmarkKey(item))}">Remove</button></div></article>`;
+      }).join('') || '<div class="empty-state">No saved hit points yet. Bookmark an event from Home to keep it here.</div>';
+      el('savedList').querySelectorAll('[data-open-saved]').forEach((button) => button.addEventListener('click', () => openSavedItem(button.dataset.openSaved)));
+      el('savedList').querySelectorAll('[data-remove-saved]').forEach((button) => button.addEventListener('click', () => {
+        state.bookmarks.delete(button.dataset.removeSaved);
+        savePreferences();
+        renderProfile();
+        renderCard();
+      }));
+    }
+
+    function setActiveView(view) {
+      state.activeView = view;
+      document.body.dataset.view = view.toLowerCase();
+      document.querySelectorAll('.nav-item[data-nav]').forEach((button) => button.classList.toggle('active', button.dataset.nav === view));
+      el('hitPointList').classList.toggle('active', view === 'Activity');
+      el('settingsView').classList.toggle('active', view === 'Settings');
+      el('youView').classList.toggle('active', view === 'You');
+      if (view === 'You') renderProfile();
+      if (view === 'Home') {
+        window.setTimeout(() => map.resize(), 80);
+        window.requestAnimationFrame(updateFilterScrollButtons);
+      }
+    }
+
+    function openSavedItem(key) {
+      const item = state.data.find((entry) => bookmarkKey(entry) === key);
+      if (!item) {
+        showToast('This saved hit point is no longer available');
+        return;
+      }
+      state.search = '';
+      el('searchInput').value = '';
+      state.category = 'all';
+      applyFilters();
+      const index = state.filtered.findIndex((entry) => bookmarkKey(entry) === key);
+      if (index < 0) {
+        showToast('This point is excluded by your current Settings');
+        return;
+      }
+      selectItem(index, true, true);
+    }
+
     function renderHitList() {
       const fallbackImage = 'https://images.unsplash.com/photo-1517457373958-b7bdd4587205?auto=format&fit=crop&w=160&q=80';
       el('hitListCount').textContent = `${state.filtered.length} ${state.filtered.length === 1 ? 'point' : 'points'}`;
-      el('listToggleCount').textContent = `(${state.filtered.length})`;
       el('hitListItems').innerHTML = state.filtered.map((item, index) => {
         const category = categoryOf(item);
         const meta = categoryMeta[category] || categoryMeta.other;
@@ -483,7 +722,7 @@
         return `<article class="hit-list-item ${index === state.selected ? 'selected' : ''}" data-list-index="${index}" tabindex="0" role="button" aria-pressed="${index === state.selected}" style="--category-color:${meta.color}"><img class="list-thumb" src="${escapeHtml(image)}" alt="" loading="lazy" onerror="this.onerror=null;this.src='${fallbackImage}'"><div class="list-item-body"><h3 class="list-item-title" title="${escapeHtml(title)}">${escapeHtml(title)}</h3><p class="list-item-place">地點：${escapeHtml(place)}</p><span class="list-item-category">${meta.icon} ${escapeHtml(meta.label)}</span><p class="list-item-date">${escapeHtml(dateTime)}</p><div class="list-item-actions">${instagram}${navigate}</div></div></article>`;
       }).join('') || '<div class="empty-state">No hit points match that search.</div>';
       el('hitListItems').querySelectorAll('[data-list-index]').forEach((row) => {
-        const select = () => selectItem(Number(row.dataset.listIndex), true);
+        const select = () => selectItem(Number(row.dataset.listIndex), true, true);
         row.addEventListener('click', (event) => {
           if (event.target.closest('a')) return;
           select();
@@ -531,13 +770,16 @@
           state.bookmarks.add(key);
           showToast('Saved to bookmarks');
         }
+        savePreferences();
         renderCard();
+        renderProfile();
       });
     }
 
-    function selectItem(index, pan = false) {
+    function selectItem(index, pan = false, goHome = false) {
       if (!state.filtered.length) return;
       state.selected = (index + state.filtered.length) % state.filtered.length;
+      if (goHome) setActiveView('Home');
       renderCard();
       renderMarkers();
       renderHitList();
@@ -551,7 +793,7 @@
       const recencyCutoff = now - 45 * 24 * 60 * 60 * 1000;
       state.filtered = state.data.filter((item) => {
         const matchesCategory = state.category === 'all' || categoryOf(item) === state.category;
-        return matchesSearchAndDates(item, search, now, recencyCutoff) && matchesCategory;
+        return state.enabledCategories[categoryOf(item)] && matchesLocationSetting(item) && matchesSearchAndDates(item, search, now, recencyCutoff) && matchesCategory;
       });
       if (state.selected >= state.filtered.length) state.selected = 0;
       renderFilters(); renderMarkers(); renderCard(); renderHitList();
@@ -573,7 +815,6 @@
         state.data = fallbackData.map((item, index) => normalize(item, index, coordinateUsage));
         showToast(`${fileName} unavailable; preview data loaded`);
       }
-      el('datasetLabel').textContent = state.showWithoutDate ? 'Showing all recent events' : 'Showing events with explicit dates';
       applyFilters();
     }
 
@@ -582,26 +823,82 @@
     el('datasetToggle').addEventListener('change', (event) => {
       state.showWithoutDate = event.target.checked;
       state.selected = 0;
-      el('datasetLabel').textContent = state.showWithoutDate ? 'Showing all recent events' : 'Showing events with explicit dates';
+      savePreferences();
       applyFilters();
     });
-    function setListOpen(open) {
-      const panel = el('hitPointList');
-      const mobile = window.matchMedia('(max-width: 799px)').matches;
-      panel.classList.remove('collapsed', 'open');
-      if (mobile) panel.classList.toggle('open', open);
-      else panel.classList.toggle('collapsed', !open);
-      el('listToggle').setAttribute('aria-expanded', String(open));
-    }
-    window.matchMedia('(max-width: 799px)').addEventListener('change', (event) => setListOpen(!event.matches));
-    el('listToggle').addEventListener('click', () => {
-      const mobile = window.matchMedia('(max-width: 799px)').matches;
-      const isOpen = mobile ? el('hitPointList').classList.contains('open') : !el('hitPointList').classList.contains('collapsed');
-      setListOpen(!isOpen);
+    el('includeNonHongKong').addEventListener('change', (event) => {
+      state.includeNonHongKong = event.target.checked;
+      state.selected = 0;
+      savePreferences();
+      applyFilters();
     });
-    el('listClose').addEventListener('click', () => setListOpen(false));
-    setListOpen(!window.matchMedia('(max-width: 799px)').matches);
-    document.querySelectorAll('.nav-item').forEach((button) => button.addEventListener('click', () => { document.querySelectorAll('.nav-item').forEach((item) => item.classList.remove('active')); if (button.dataset.nav !== 'Create') button.classList.add('active'); showToast(button.dataset.nav === 'Discover' ? 'Discovering nearby hits' : `${button.dataset.nav} is coming soon`); }));
+    el('uiScale').addEventListener('change', (event) => {
+      state.uiScale = event.target.value;
+      document.body.classList.remove('scale-compact', 'scale-default', 'scale-large');
+      document.body.classList.add(`scale-${state.uiScale}`);
+      savePreferences();
+    });
+    el('profileName').addEventListener('input', (event) => {
+      state.profile.name = event.target.value;
+      const name = state.profile.name.trim() || 'Your name';
+      el('profileNamePreview').textContent = name;
+      if (!state.profile.avatar) el('profileAvatar').textContent = (name[0] || 'Y').toUpperCase();
+      savePreferences();
+    });
+    el('avatarUrl').addEventListener('change', (event) => {
+      state.profile.avatar = event.target.value.trim();
+      savePreferences();
+      renderProfile();
+    });
+    el('avatarFile').addEventListener('change', (event) => {
+      const file = event.target.files && event.target.files[0];
+      if (!file) return;
+      if (!file.type.startsWith('image/')) {
+        showToast('Choose an image file');
+        event.target.value = '';
+        return;
+      }
+      const reader = new FileReader();
+      reader.addEventListener('load', () => {
+        if (typeof reader.result !== 'string') {
+          showToast('Could not read that image');
+          return;
+        }
+        state.profile.avatar = reader.result;
+        savePreferences();
+        renderProfile();
+        event.target.value = '';
+      });
+      reader.addEventListener('error', () => showToast('Could not read that image'));
+      reader.readAsDataURL(file);
+    });
+    el('joinDate').addEventListener('change', (event) => {
+      state.profile.joinDate = event.target.value || defaultJoinDate;
+      savePreferences();
+      el('joinDatePreview').textContent = `Member since ${formatDate(state.profile.joinDate)}`;
+    });
+    el('filterScrollLeft').addEventListener('click', () => el('filters').scrollBy({ left: -220, behavior: 'smooth' }));
+    el('filterScrollRight').addEventListener('click', () => el('filters').scrollBy({ left: 220, behavior: 'smooth' }));
+    el('filters').addEventListener('scroll', updateFilterScrollButtons, { passive: true });
+    window.addEventListener('resize', updateFilterScrollButtons);
+    document.querySelectorAll('[data-go-home]').forEach((button) => button.addEventListener('click', () => setActiveView('Home')));
+    document.querySelectorAll('.nav-item').forEach((button) => button.addEventListener('click', () => {
+      const view = button.dataset.nav;
+      if (view === 'Create') {
+        showToast('Create is coming soon');
+        return;
+      }
+      setActiveView(view);
+      if (view === 'Home') showToast('Home');
+    }));
+    el('datasetToggle').checked = state.showWithoutDate;
+    el('includeNonHongKong').checked = state.includeNonHongKong;
+    el('uiScale').value = state.uiScale;
+    document.body.classList.add(`scale-${state.uiScale}`);
+    renderCategorySettings();
+    renderProfile();
+    setActiveView('Home');
+    savePreferences();
     loadData();
   </script>
 </body>
